@@ -45,7 +45,7 @@ PureGraph.Node = class extends React.Component {
     }
 
     static getList (props) {
-        return props.nodes;
+        return props.children.nodes;
     }
 
     static toProps (node, props) {
@@ -68,7 +68,7 @@ PureGraph.Edge = class extends React.Component {
     }
 
     static getList (props) {
-        return props.edges;
+        return props.children.edges;
     }
 
     static toProps (edge, endPositions, props) {

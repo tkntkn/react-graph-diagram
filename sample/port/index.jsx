@@ -49,4 +49,4 @@ const data = {
     ],
 };
 
-ReactDOM.render(<Graph {...data} />, document.getElementById("container"));
+ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
