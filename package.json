@@ -1,0 +1,32 @@
+{
+  "name": "react-graph-diagram",
+  "version": "0.0.1",
+  "description": "a simplest graph-type diagram react component",
+  "main": "dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "rollup -c"
+  },
+  "files": [
+    "README.md",
+    "rollup.config.js",
+    "src",
+    "sample"
+  ],
+  "author": "tkntkn",
+  "license": "MIT",
+  "dependencies": {
+    "rollup": "^0.48.2",
+    "rollup-plugin-babel": "^3.0.2",
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-react": "^6.24.1",
+    "rollup-plugin-replace": "^1.1.1"
+  },
+  "devDependencies": {
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "rollup-plugin-commonjs": "^8.2.0",
+    "rollup-plugin-node-resolve": "^3.0.0"
+  }
+}
