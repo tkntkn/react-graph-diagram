@@ -144,10 +144,45 @@ export const DynamicContainer2 = Graph => class extends React.Component {
         return this.makeEdge({id:POINTER_END_ID, position}, end);
     }
 
+    assignToTarget (target, data) {
+        return compare => compare.id === target.id ? Object.assign(compare, data): compare;
+    }
+
     onGraphDoubleClick (target, event) {
         if (this.doubleClickStopPropagate) { this.doubleClickStopPropagate = false; return; }
         this.setState({
             nodes: this.state.nodes.concat(this.makeNewNode(pointer(event), Math.floor(Math.random() * 10 + 1))),
+        }, this.forceUpdate.bind(this));
+    }
+
+    onNodeDragStart (target, event) {
+        event.dataTransfer.setDragImage(dummyImage, 0, 0);
+        const dragState = {dragging:true, current:pointer(event), origin:pointer(event)};
+        this.setState({
+            nodes: this.state.nodes.map(this.assignToTarget(target, dragState))
+        });
+    }
+
+    onNodeDrag (target, event) {
+        if (pointer(event).x === 0 && pointer(event).y === 0) return;
+        const dragState = {current:pointer(event)};
+        this.setState({
+            nodes: this.state.nodes.map(this.assignToTarget(target, dragState))
+        })
+    }
+
+    onNodeDragEnd (target, event) {
+        const vecaddsub = (a,b,c) => ({x:a.x+b.x-c.x, y:a.y+b.y-c.y});
+        const dragState = {dragging:false, position: vecaddsub(target.position, pointer(event), target.origin)};
+        this.setState({
+            nodes: this.state.nodes.map(this.assignToTarget(target, dragState))
+        })
+    }
+
+    onNodeDoubleClick (target, event) {
+        this.setState({
+            nodes: this.state.nodes.filter(node => node.id!==target.id),
+            edges: this.state.edges.filter(edge => !target.edges.includes(edge.id))
         }, this.forceUpdate.bind(this));
     }
 
@@ -156,26 +191,6 @@ export const DynamicContainer2 = Graph => class extends React.Component {
         this.doubleClickStopPropagate = true;
         this.setState({
             edges: this.state.edges.filter(edge => edge.id!==target.id)
-        }, this.forceUpdate.bind(this));
-    }
-
-    onNodeDragStart (target, event) {
-        // this.setState
-    }
-
-    onNodeDrag (target, event) {
-
-    }
-
-    onNodeDragEnd (target, event) {
-
-    }
-
-    onNodeDoubleClick (target, event) {
-        event.stopPropagation();
-        this.setState({
-            nodes: this.state.nodes.filter(node => node.id!==target.id),
-            edges: this.state.edges.filter(edge => !target.edges.includes(edge.id))
         }, this.forceUpdate.bind(this));
     }
 
@@ -189,14 +204,15 @@ export const DynamicContainer2 = Graph => class extends React.Component {
     }
 
     onEndDrag (target, event) {
+        event.stopPropagation();
         if (pointer(event).x === 0 && pointer(event).y === 0) return;
         this.setState({
-            keepGraph: counter(),
             edges: this.state.edges.map(updateEdgePointerEnd(pointer(event)))
         });
     }
 
     onEndDragEnd (target, event) {
+        event.stopPropagation();
         this.setState({
             edges: this.state.edges.filter(checkPointerEdge(false))
         }, this.forceUpdate.bind(this));

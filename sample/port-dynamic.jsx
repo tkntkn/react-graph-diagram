@@ -5,11 +5,14 @@ import {DynamicContainer2, DynamicGraph, PortGraph, ReactUtils} from 'react-grap
 
 class Node extends React.Component {
     render () {
-        const handlers = ReactUtils.getOnEventProps(this.props, "Node", [this.props.node]);
-        const style = {left: this.props.node.position.x, top: this.props.node.position.y};
+        const node = this.props.node;
+        const handlers = ReactUtils.getOnEventProps(this.props, "Node", [node]);
+        const vecaddsub = (a,b,c) => ({x:a.x+b.x-c.x, y:a.y+b.y-c.y});
+        const position = node.dragging ? vecaddsub(node.position, node.current, node.origin) : node.position;
+        const style = {left: position.x, top: position.y};
         return (
             <div draggable className="node" style={style} {...handlers}>
-                {this.props.node.id}
+                {node.id}
                 {this.props.children.map((child,i,a) => {
                     const {x,y} = polar(26, 2*Math.PI*(i/a.length));
                     const style = {position: 'absolute', left:`${20+x}px`, top:`${20+y}px`};
