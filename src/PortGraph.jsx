@@ -24,33 +24,21 @@ export const PortGraph = function (Node, Edge, Port) {
 
         prepareGraph () {
             super.prepareGraph(true);
-            let ports = Object.assign({}, ...this.nodes.map(node => ({[node.id]: node})));
-            ports = objectMap(ports, (id, node) => Array.from(Array(node.size)).map((_,i)=>i));
-            ports = objectMap(ports, (id, indexes) => indexes.map(index => ({node:id, index})));
-            ports = objectMap(ports, (id, ports) => ports.map(port  => Object.assign({id: this.calcPortId(port)},port)));
-            this.ports = ports;
+            this.edges = this.edges.map(this.assignIdToEdge.bind(this))
+
+            this.ports = Object.assign({}, ...this.nodes.map(node => ({
+                [node.id]: Array.from(Array(node.size))
+                    .map((_, index)=> ({id:this.calcPortId({node:node.id, index}), node:node.id, index}))
+            })));
+
             this.portEventHandlers = Object.assign({},
                 getOnEventProps(this.props, "Port", null, "Port"),
                 getOnEventProps(this.props, "End", null, "Port"),
             );
-
-            this.nodes.forEach(node => node.edges = []);
-            this.edges = this.edges.map(this.assignIdToEdge.bind(this))
-            this.edges.forEach(edge => {
-                edge.ends.forEach(end => {
-                    if (end.id === POINTER_END_ID) return;
-                    const node = this.nodes.find(node => node.id === end.node);
-                    node.edges.push(edge.id);
-                })
-            });
         }
 
         calcPortId (port) {
             return port.id || `port-${port.node}-${port.index}`;
         }
     };
-}
-
-PortGraph.Node = class extends PureGraph.Node {}
-PortGraph.Edge = class extends PureGraph.Edge {}
-PortGraph.Port = class extends React.Component {}
+};

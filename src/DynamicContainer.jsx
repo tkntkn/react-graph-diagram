@@ -1,7 +1,7 @@
 import React from 'react';
 import {PureGraph} from './PureGraph'
 import {getOnEventMethods, getOnEventProps} from './ReactUtils';
-import {dummyImage, ID, pointer, objectMap} from './Utils';
+import {dummyImage, ID, pointer, objectMap, vecaddsub} from './Utils';
 
 export const POINTER_END_ID = "react-graph-diagram::POINTER_END_ID";
 export const makePointerEnd = position => ({id:POINTER_END_ID, position});
@@ -24,9 +24,6 @@ export const DynamicContainer = Graph => {
             super(props);
             this.state = props.children;
             this.doubleClickStopPropagate = false;
-        }
-
-        componentWillReceiveProps () {
         }
 
         makeNewNode (position, size) {
@@ -73,7 +70,6 @@ export const DynamicContainer = Graph => {
         }
 
         onNodeDragEnd (target, event) {
-            const vecaddsub = (a,b,c) => ({x:a.x+b.x-c.x, y:a.y+b.y-c.y});
             const dragState = {dragging:false, position: vecaddsub(target.position, pointer(event), target.origin)};
             this.setState({
                 nodes: this.state.nodes.map(this.assignToTarget(target, dragState))

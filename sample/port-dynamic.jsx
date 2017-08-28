@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {polar} from './utils';
+import {polar, vecaddsub} from './utils';
 import {DynamicContainer, PortGraph, ReactUtils} from 'react-graph-diagram';
 
 class Node extends React.Component {
     render () {
         const node = this.props.node;
         const handlers = ReactUtils.getOnEventProps(this.props, "Node", [node]);
-        const vecaddsub = (a,b,c) => ({x:a.x+b.x-c.x, y:a.y+b.y-c.y});
         const position = node.dragging ? vecaddsub(node.position, node.current, node.origin) : node.position;
         const style = {left: position.x, top: position.y};
         return (
@@ -45,11 +44,9 @@ class Port extends React.Component {
 
 class Graph extends DynamicContainer(PortGraph(Node, Edge, Port)) {
     checkLinkedEdge (target, is) {
-        return edge => !target.edges.includes(edge.id);
+        return edge => edge.ends.some(end => end.node === target.id) ? is : !is
     }
 }
-
-console.log(new Graph({}));
 
 const data = {
     nodes: [

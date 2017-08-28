@@ -55,8 +55,5 @@ export const PureGraph = function (Node, Edge) {
             const rect = this.refs[end.id].refs.point.getBoundingClientRect();
             return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, };
         }
-    }
-}
-
-PureGraph.Node = class extends React.Component {};
-PureGraph.Edge = class extends React.Component {};
+    };
+};
