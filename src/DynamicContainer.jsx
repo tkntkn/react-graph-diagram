@@ -50,7 +50,7 @@ export const DynamicContainer = Graph => class extends React.Component {
         this.doubleClickStopPropagate = false;
     }
 
-    onDoubleClick (target) {
+    onGraphDoubleClick (target) {
         return event => {
             if (this.doubleClickStopPropagate) {
                 this.doubleClickStopPropagate = false;

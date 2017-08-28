@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Container, PureGraph, pointer} from 'react-graph-diagram';
+import {PureGraph, pointer} from 'react-graph-diagram';
 import * as RGD from 'react-graph-diagram';
 
 class Edge extends React.Component {

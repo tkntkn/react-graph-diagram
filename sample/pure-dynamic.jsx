@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {EditableContainer, EditablePureGraph} from 'react-graph-diagram';
+import {DynamicContainer, DynamicPureGraph} from 'react-graph-diagram';
 import * as RGD from 'react-graph-diagram';
 
 class Edge extends React.Component {
@@ -28,8 +28,8 @@ class Node extends React.Component {
     }
 }
 
-const Graph = EditablePureGraph(Node, Edge);
-const GraphContainer = EditableContainer(Graph);
+const Graph = DynamicPureGraph(Node, Edge);
+const GraphContainer = DynamicContainer(Graph);
 
 const data = {
     nodes: [

@@ -1,5 +1,5 @@
 npx rollup -c --watch &
-for sample in `find sample -mindepth 1 -maxdepth 1 -type d -printf "%f\n"`; do
-    env sample=$sample npx rollup -c rollup.config.sample.js --watch &
+for name in `find sample -mindepth 1 -maxdepth 1 -name "*.jsx" -printf "%f\n"`; do
+    env name=${name::-4} npx rollup -c rollup.config.sample.js --watch &
 done
 wait
