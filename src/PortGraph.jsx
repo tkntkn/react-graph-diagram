@@ -23,7 +23,7 @@ export const PortGraph = function (Node, Edge, Port) {
         }
 
         prepareGraph () {
-            super.prepareGraph();
+            super.prepareGraph(true);
             let ports = Object.assign({}, ...this.nodes.map(node => ({[node.id]: node})));
             ports = objectMap(ports, (id, node) => Array.from(Array(node.size)).map((_,i)=>i));
             ports = objectMap(ports, (id, indexes) => indexes.map(index => ({node:id, index})));

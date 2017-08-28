@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {polar} from './utils';
-import {DynamicContainer, DynamicGraph, PortGraph, ReactUtils} from 'react-graph-diagram';
+import {DynamicContainer, PortGraph, ReactUtils} from 'react-graph-diagram';
 
 class Node extends React.Component {
     render () {
@@ -43,7 +43,13 @@ class Port extends React.Component {
     }
 }
 
-const Graph = DynamicContainer(PortGraph(Node, Edge, Port));
+class Graph extends DynamicContainer(PortGraph(Node, Edge, Port)) {
+    checkLinkedEdge (target, is) {
+        return edge => !target.edges.includes(edge.id);
+    }
+}
+
+console.log(new Graph({}));
 
 const data = {
     nodes: [

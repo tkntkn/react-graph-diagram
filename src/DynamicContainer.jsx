@@ -11,17 +11,14 @@ export const updateEdgePointerEnd = position => edge => Object.assign({}, edge, 
 export const checkPointerEnd  = is => end  => end.id===POINTER_END_ID ? is : !is;
 export const checkPointerEdge = is => edge => edge.ends.every(checkPointerEnd(is));
 
-export const DynamicGraph = function (Graph) {
-    return class extends Graph {
+export const DynamicContainer = Graph => {
+    Graph = class extends Graph {
         calcEndPosition (end) {
             if (end.id === POINTER_END_ID) return end.position;
             return super.calcEndPosition(end);
         }
-    }
-}
+    };
 
-export const DynamicContainer = Graph => {
-    Graph = DynamicGraph(Graph);
     return class extends React.Component {
         constructor (props) {
             super(props);
@@ -46,6 +43,10 @@ export const DynamicContainer = Graph => {
 
         assignToTarget (target, data) {
             return compare => compare.id === target.id ? Object.assign(compare, data): compare;
+        }
+
+        checkLinkedEdge (target, is) {
+            return compare => compare.ends.find(e => e.id === target.id) ? is : !is
         }
 
         onGraphDoubleClick (target, event) {
@@ -83,7 +84,7 @@ export const DynamicContainer = Graph => {
             event.stopPropagation();
             this.setState({
                 nodes: this.state.nodes.filter(node => node.id!==target.id),
-                edges: this.state.edges.filter(edge => !target.edges.includes(edge.id))
+                edges: this.state.edges.filter(this.checkLinkedEdge(target, false))
             }, this.forceUpdate.bind(this));
         }
 

@@ -37,11 +37,18 @@ export const PureGraph = function (Node, Edge) {
             return <Edge key={edge.id} {...this.mapEdgeToProps(edge)} />;
         }
 
-        prepareGraph () {
+        prepareGraph (override) {
             this.nodes = this.props.children.nodes;
             this.edges = this.props.children.edges;
-            this.nodeEventHandlers = getOnEventProps(this.props, "Node", null, false);
             this.edgeEventHandlers = getOnEventProps(this.props, "Edge", null, false);
+            if (override) {
+                this.nodeEventHandlers = getOnEventProps(this.props, "Node", null, false);
+            } else {
+                this.nodeEventHandlers = Object.assign({},
+                    getOnEventProps(this.props, "Node", null, "Node"),
+                    getOnEventProps(this.props, "End", null, "Node"),
+                );
+            }
         }
 
         calcEndPosition (end) {

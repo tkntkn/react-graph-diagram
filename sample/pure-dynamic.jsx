@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {DynamicContainer, DynamicGraph, PureGraph, ReactUtils} from 'react-graph-diagram';
+import {DynamicContainer, PureGraph, ReactUtils} from 'react-graph-diagram';
 
 class Node extends React.Component {
     render () {
@@ -27,8 +27,7 @@ class Edge extends React.Component {
     }
 }
 
-const Graph = DynamicGraph(PureGraph(Node, Edge));
-const GraphContainer = DynamicContainer(Graph);
+class Graph extends DynamicContainer(PureGraph(Node, Edge)) {};
 
 const data = {
     nodes: [
@@ -42,4 +41,4 @@ const data = {
     ],
 };
 
-ReactDOM.render(<GraphContainer>{data}</GraphContainer>, document.getElementById("container"));
+ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
