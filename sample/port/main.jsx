@@ -39,13 +39,13 @@ const Graph = PortGraph(Node, Port, Edge);
 
 const data = {
     nodes: [
-        {id: "1", size: 6, x: 100, y: 150},
-        {id: "2", size: 6, x: 300, y: 200},
-        {id: "3", size: 6, x: 400, y: 100},
+        {id: "n1", size: 6, x: 100, y: 150},
+        {id: "n2", size: 6, x: 300, y: 200},
+        {id: "n3", size: 6, x: 400, y: 100},
     ],
     edges: [
-        {id: "1", ends: [{node: {id: "1"}, index: 0}, {node: {id: "2"}, index: 2}]},
-        {id: "2", ends: [{node: {id: "2"}, index: 5}, {node: {id: "3"}, index: 3}]},
+        {id: "e1", ends: [{node:"n1", index:0}, {node:"n2", index:2}]},
+        {id: "e2", ends: [{node:"n2", index:5}, {node:"n3", index:3}]},
     ],
 };
 

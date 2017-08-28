@@ -2,6 +2,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import replace from 'rollup-plugin-replace';
 import commonjs from "rollup-plugin-commonjs";
 import babel from "rollup-plugin-babel";
+import multi from 'rollup-plugin-multi-entry';
 
 import path from 'path';
 import fs from  'fs';
@@ -18,6 +19,12 @@ const selfImport = option => {
 };
 
 export default {
+    input: `sample/${process.env.sample}/main.jsx`,
+    output: {
+        file: `sample/${process.env.sample}/index.js`,
+        sourcemap: 'inline',
+        format: 'es'
+    },
     plugins: [
         replace({ 'process.env.NODE_ENV': process.env.NODE_ENV }),
         babel({
@@ -33,5 +40,6 @@ export default {
         }),
         commonjs(),
         selfImport(),
+        multi(),
     ]
 };

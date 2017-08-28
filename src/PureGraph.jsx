@@ -4,51 +4,51 @@ import ReactDOM from 'react-dom';
 const PureGraph = function (Node, Edge) {
     return class extends React.Component {
         componentDidMount () {
-            ReactDOM.render(this.renderEdges(), this.refs["edges"]);
+            this.renderEdges();
         }
 
         componentDidUpdate () {
-            ReactDOM.render(this.renderEdges(), this.refs["edges"]);
+            this.renderEdges();
         }
 
         render () {
-            const rootStyle = { width: "100%", height: "100%", position: "relative", };
-            const svgStyle  = { width: "100%", height: "100%", position: "absolute", pointerEvents: "none" };
+            const divStyle = { width: "100%", height: "100%", position: "relative", };
+            const svgStyle = { width: "100%", height: "100%", position: "absolute", pointerEvents: "none" };
             return (
-                <div className="graph-diagram" style={rootStyle}>
+                <div className="graph-diagram" style={divStyle}>
                     <svg ref="edges" style={svgStyle}></svg>
-                    <div ref="nodes">{ Node.getList(this.props).map(this.renderNode.bind(this)) }</div>
+                    <div ref="nodes" style={divStyle}>{ Node.makeList(this.props).map(this.renderNode.bind(this)) }</div>
                 </div>
             );
         }
 
         renderNode (node) {
             return (
-                <Node key={Node.key(node)} ref={Node.key(node)} {...Node.toProps(node, this.props)} />
+                <Node key={Node.getId(node)} ref={Node.getId(node)} {...Node.getProps(node, this.props)} renderEdges={this.renderEdges.bind(this)}/>
             );
         }
 
         renderEdges () {
-            return <g>{ Edge.getList(this.props).map(this.renderEdge.bind(this))}</g>;
+            ReactDOM.render(<g>{ Edge.makeList(this.props).map(this.renderEdge.bind(this))}</g>, this.refs["edges"]);
         }
 
         renderEdge (edge) {
-            const endPositions = Edge.ends(edge).map(node => Node.getPosition(node, this.refs[Node.key(node)], this.props));
-            return <Edge key={Edge.key(edge)} {...Edge.toProps(edge, endPositions, this.props)} />;
+            const endPositions = Edge.getEnds(edge).map(end => Node.getPosition(end, this.refs[Node.getId(end)], this.props));
+            return <Edge key={Edge.getId(edge)} {...Edge.getProps(edge, endPositions, this.props)} />;
         }
     }
 }
 
 PureGraph.Node = class extends React.Component {
-    static key (node, props) {
-        return `node-${node.id}`;
-    }
-
-    static getList (props) {
+    static makeList (props) {
         return props.children.nodes;
     }
 
-    static toProps (node, props) {
+    static getId (node, props) {
+        return node.id;
+    }
+
+    static getProps (node, props) {
         return Object.assign({}, props, {node});
     }
 
@@ -59,19 +59,19 @@ PureGraph.Node = class extends React.Component {
 }
 
 PureGraph.Edge = class extends React.Component {
-    static key (edge, props) {
-        return `edge-${edge.id}`;
-    }
-
-    static ends (edge) {
-        return edge.ends;
-    }
-
-    static getList (props) {
+    static makeList (props) {
         return props.children.edges;
     }
 
-    static toProps (edge, endPositions, props) {
+    static getId (edge, props) {
+        return edge.id;
+    }
+
+    static getEnds (edge) {
+        return edge.ends;
+    }
+
+    static getProps (edge, endPositions, props) {
         return Object.assign({}, props, {edge, endPositions});
     }
 }

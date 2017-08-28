@@ -20,13 +20,13 @@ const Graph = PureGraph(Node, Edge);
 
 const data = {
     nodes: [
-        {id: "1", x: 100, y: 150},
-        {id: "2", x: 300, y: 200},
-        {id: "3", x: 400, y: 100},
+        {id: "n1", x: 100, y: 150},
+        {id: "n2", x: 300, y: 200},
+        {id: "n3", x: 400, y: 100},
     ],
     edges: [
-        {id: "1", ends: [{id: "1"}, {id :"2"}]},
-        {id: "2", ends: [{id: "2"}, {id :"3"}]},
+        {id: "e1", ends: [{id:"n1"}, {id:"n2"}]},
+        {id: "e2", ends: [{id:"n2"}, {id:"n3"}]},
     ],
 };
 

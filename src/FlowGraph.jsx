@@ -5,23 +5,18 @@ const FlowGraph = function (Node, Port, Edge) {
 }
 
 FlowGraph.Node = class extends PortGraph.Node {}
-FlowGraph.Edge = class extends PortGraph.Edge {
-    static ends (edge) {
-        const src = Object.assign({flow: 'in' }, edge.src);
-        const dst = Object.assign({flow: 'out'}, edge.dst);
-        return [src, dst];
-    }
-}
+FlowGraph.Edge = class extends PortGraph.Edge {}
 
 FlowGraph.Port = class extends PortGraph.Port {
-    static key (port, props) {
-        return `port-${FlowGraph.Node.key(port.node)}-${port.flow}-${port.index}`;
+    static makeList (node, props) {
+        return [
+            ... Array.from(Array(node.in )).map((_,index) => ({node:node.id, flow:'in',  index})),
+            ... Array.from(Array(node.out)).map((_,index) => ({node:node.id, flow:'out', index})),
+        ];
     }
 
-    static getList (node, props) {
-        const ins  = Array.from(Array(node.in )).map((_,index) => ({node, index, flow: 'in'}));
-        const outs = Array.from(Array(node.out)).map((_,index) => ({node, index, flow: 'out'}));
-        return [...ins, ...outs];
+    static getId (port, props) {
+        return `port-${port.node}-${port.flow}-${port.index}`;
     }
 }
 
