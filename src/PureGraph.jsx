@@ -1,79 +1,56 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-const PureGraph = function (Node, Edge) {
+export const PureGraph = function (Node, Edge) {
     return class extends React.Component {
-        componentDidMount () {
-            this.renderEdges();
-        }
-
-        componentDidUpdate () {
-            this.renderEdges();
-        }
+        componentWillMount  () { this.calcHelpers(); }
+        componentWillUpdate () { this.calcHelpers(); }
+        componentDidMount   () { this.renderEdges(); }
+        componentDidUpdate  () { this.renderEdges(); }
+        mapNodeToProps (node) { return Object.assign(this.nodeHandlers, {node, renderEdges: this.renderEdges}); }
+        mapEdgeToProps (edge) { return Object.assign(this.edgeHandlers, {edge}); }
+        assignPositionToEnd  (end)  { return Object.assign({}, end,  {position: this.calcEndPosition(end)}); }
+        assignPositionToEdge (edge) { return Object.assign({}, edge, {ends: edge.ends.map(this.assignPositionToEnd.bind(this))}); }
 
         render () {
-            const divStyle = { width: "100%", height: "100%", position: "relative", };
-            const svgStyle = { width: "100%", height: "100%", position: "absolute", pointerEvents: "none" };
+            const style = { width: "100%", height: "100%", position: "absolute" };
             return (
-                <div className="graph-diagram" style={divStyle}>
-                    <svg ref="edges" style={svgStyle}></svg>
-                    <div ref="nodes" style={divStyle}>{ Node.makeList(this.props).map(this.renderNode.bind(this)) }</div>
+                <div className="graph-diagram" style={style}>
+                    <svg className="edges" ref="edges" style={style}></svg>
+                    <div className="nodes" ref="nodes" style={style}>{ this.nodes.map(this.renderNode.bind(this)) }</div>
                 </div>
             );
         }
 
-        renderNode (node) {
-            return (
-                <Node key={Node.getId(node)} ref={Node.getId(node)} {...Node.getProps(node, this.props)} renderEdges={this.renderEdges.bind(this)}/>
-            );
+        renderEdges () {
+            this.edges = this.edges.map(this.assignPositionToEdge.bind(this))
+            ReactDOM.render( <g>{this.edges.map(this.renderEdge.bind(this))}</g>, this.refs["edges"]);
         }
 
-        renderEdges () {
-            ReactDOM.render(<g>{ Edge.makeList(this.props).map(this.renderEdge.bind(this))}</g>, this.refs["edges"]);
+        renderNode (node) {
+            return <Node key={node.id} ref={node.id} {...this.mapNodeToProps(node)} />;
         }
 
         renderEdge (edge) {
-            const endPositions = Edge.getEnds(edge).map(end => Node.getPosition(end, this.refs[Node.getId(end)], this.props));
-            return <Edge key={Edge.getId(edge)} {...Edge.getProps(edge, endPositions, this.props)} />;
+            return <Edge key={edge.id} {...this.mapEdgeToProps(edge)} />;
+        }
+
+        calcHelpers () {
+            this.nodes = this.props.children.nodes;
+            this.edges = this.props.children.edges;
+
+            const nodeHandlerNames = Object.getOwnPropertyNames(this.props).filter(name => name.startsWith("onNode"));
+            this.nodeHandlers = Object.assign({}, ...nodeHandlerNames.map(name => ({[name]: this.props[name]}) ));
+            const edgeHandlerNames = Object.getOwnPropertyNames(this.props).filter(name => name.startsWith("onEdge"));
+            this.edgeHandlers = Object.assign({}, ...edgeHandlerNames.map(name => ({[name]: this.props[name]}) ));
+        }
+
+        calcEndPosition (end) {
+            const rect = this.refs[end.id].refs.point.getBoundingClientRect();
+            return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, };
         }
     }
 }
 
-PureGraph.Node = class extends React.Component {
-    static makeList (props) {
-        return props.children.nodes;
-    }
-
-    static getId (node, props) {
-        return node.id;
-    }
-
-    static getProps (node, props) {
-        return Object.assign({}, props, {node});
-    }
-
-    static getPosition (node, element, props) {
-        const rect = element.refs.point.getBoundingClientRect();
-        return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, }
-    }
-}
-
-PureGraph.Edge = class extends React.Component {
-    static makeList (props) {
-        return props.children.edges;
-    }
-
-    static getId (edge, props) {
-        return edge.id;
-    }
-
-    static getEnds (edge) {
-        return edge.ends;
-    }
-
-    static getProps (edge, endPositions, props) {
-        return Object.assign({}, props, {edge, endPositions});
-    }
-}
-
-export default PureGraph;
+PureGraph.Node = class extends React.Component {};
+PureGraph.Edge = class extends React.Component {};

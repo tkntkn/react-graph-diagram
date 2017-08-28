@@ -1,5 +1,5 @@
 import React from 'react';
-import PureGraph from './PureGraph';
+import {PureGraph} from './PureGraph';
 
 const PortGraph = function (Node, Port, Edge) {
     return class extends PureGraph(Node, Edge) {
