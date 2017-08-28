@@ -1,18 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {PureGraph, pointer} from 'react-graph-diagram';
-import * as RGD from 'react-graph-diagram';
-
-class Edge extends React.Component {
-    render () {
-        const [a, b] = this.props.edge.ends.map(end => end.position);
-        return (
-            <g>
-                <path className="edge" d={`M${a.x},${a.y} L${b.x},${b.y}`} />
-            </g>
-        );
-    }
-}
+import {PureGraph} from 'react-graph-diagram';
 
 class Node extends React.Component {
     render () {
@@ -22,6 +10,13 @@ class Node extends React.Component {
                 {this.props.node.id}
             </div>
         );
+    }
+}
+
+class Edge extends React.Component {
+    render () {
+        const [a, b] = this.props.edge.ends.map(end => end.position);
+        return <path className="edge" d={`M${a.x},${a.y} L${b.x},${b.y}`} />;
     }
 }
 

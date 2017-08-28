@@ -1,4 +1,4 @@
-import PortGraph from './PortGraph';
+import {PortGraph} from './PortGraph';
 
 const FlowGraph = function (Node, Port, Edge) {
     return class extends PortGraph(Node, Port, Edge) {};

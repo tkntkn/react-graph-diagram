@@ -1,49 +1,56 @@
 import React from 'react';
 import {PureGraph} from './PureGraph';
+import {POINTER_END_ID} from './DynamicContainer';
+import {getOnEventMethods, getOnEventProps} from './ReactUtils';
+import {objectMap} from './Utils';
 
-const PortGraph = function (Node, Port, Edge) {
+export const PortGraph = function (Node, Edge, Port) {
     return class extends PureGraph(Node, Edge) {
+        mapPortToProps (port) { return Object.assign(this.portEventHandlers, {port}); }
+        assignIdToEnd  (end)  { return Object.assign({}, end,  {id: this.calcPortId(end)}); }
+        assignIdToEdge (edge) { return Object.assign({}, edge, {ends: edge.ends.map(this.assignIdToEnd.bind(this))}); }
+
         renderNode (node) {
             return (
-                <Node key={Node.getId(node)} {...Node.getProps(node, this.props)} renderEdges={this.renderEdges.bind(this)}>
-                    { Port.makeList(node, this.props).map(this.renderPort.bind(this)) }
+                <Node key={node.id} ref={node.id} {...this.mapNodeToProps(node)}>
+                    { this.ports[node.id].map(this.renderPort.bind(this)) }
                 </Node>
             );
         }
 
         renderPort (port) {
-            return (
-                <Port key={Port.getId(port)} ref={Port.getId(port)} {...Port.getProps(port, this.props)} />
-            );
+            return <Port key={port.id} ref={port.id} {...this.mapPortToProps(port)} />
         }
 
-        renderEdge (edge) {
-            const endPositions = Edge.getEnds(edge).map(end => Port.getPosition(end, this.refs[Port.getId(end)], this.props));
-            return <Edge key={Edge.getId(edge)} {...Edge.getProps(edge, endPositions, this.props)} />;
+        prepareGraph () {
+            super.prepareGraph();
+            let ports = Object.assign({}, ...this.nodes.map(node => ({[node.id]: node})));
+            ports = objectMap(ports, (id, node) => Array.from(Array(node.size)).map((_,i)=>i));
+            ports = objectMap(ports, (id, indexes) => indexes.map(index => ({node:id, index})));
+            ports = objectMap(ports, (id, ports) => ports.map(port  => Object.assign({id: this.calcPortId(port)},port)));
+            this.ports = ports;
+            this.portEventHandlers = Object.assign({},
+                getOnEventProps(this.props, "Port", null, "Port"),
+                getOnEventProps(this.props, "End", null, "Port"),
+            );
+
+            this.nodes.forEach(node => node.edges = []);
+            this.edges = this.edges.map(this.assignIdToEdge.bind(this))
+            this.edges.forEach(edge => {
+                edge.ends.forEach(end => {
+                    if (end.id === POINTER_END_ID) return;
+                    const node = this.nodes.find(node => node.id === end.node);
+                    node.edges.push(edge.id);
+                })
+            });
+        }
+
+        calcPortId (port) {
+            return port.id || `port-${port.node}-${port.index}`;
         }
     };
 }
 
 PortGraph.Node = class extends PureGraph.Node {}
 PortGraph.Edge = class extends PureGraph.Edge {}
-
-PortGraph.Port = class extends React.Component {
-    static makeList (node, props) {
-        return Array.from(Array(node.size)).map((_,index) => ({node:node.id, index}));
-    }
-
-    static getId (port, props) {
-        return `port-${port.node}-${port.index}`;
-    }
-
-    static getProps (port, props) {
-        return Object.assign({}, props, {port});
-    }
-
-    static getPosition (port, element, props) {
-        const rect = element.refs.point.getBoundingClientRect();
-        return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, }
-    }
-}
-
-export default PortGraph;
+PortGraph.Port = class extends React.Component {}

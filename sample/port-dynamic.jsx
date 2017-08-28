@@ -1,0 +1,58 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {polar} from './utils';
+import {DynamicContainer2, DynamicGraph, PortGraph, ReactUtils} from 'react-graph-diagram';
+
+class Node extends React.Component {
+    render () {
+        const handlers = ReactUtils.getOnEventProps(this.props, "Node", [this.props.node]);
+        const style = {left: this.props.node.position.x, top: this.props.node.position.y};
+        return (
+            <div draggable className="node" style={style} {...handlers}>
+                {this.props.node.id}
+                {this.props.children.map((child,i,a) => {
+                    const {x,y} = polar(26, 2*Math.PI*(i/a.length));
+                    const style = {position: 'absolute', left:`${20+x}px`, top:`${20+y}px`};
+                    return <div key={i} style={style}>{child}</div>
+                })}
+            </div>
+        );
+    }
+}
+
+class Edge extends React.Component {
+    render () {
+        const handlers = ReactUtils.getOnEventProps(this.props, "Edge", [this.props.edge]);
+        const [a, b] = this.props.edge.ends.map(end => end.position);
+        return (
+            <g>
+                <path className="edge" d={`M${a.x},${a.y} L${b.x},${b.y}`} />
+                <path className="edge-wrapper" d={`M${a.x},${a.y} L${b.x},${b.y}`} {...handlers} />
+            </g>
+        );
+    }
+}
+
+class Port extends React.Component {
+    render () {
+        const handlers = ReactUtils.getOnEventProps(this.props, "Port", [this.props.port]);
+        return <span draggable ref="point" className="port" {...handlers}/>;
+    }
+}
+
+const Graph = DynamicGraph(PortGraph(Node, Edge, Port));
+const GraphContainer = DynamicContainer2(Graph);
+
+const data = {
+    nodes: [
+        {id: "n1", position: {x:100, y:150}, size: 6},
+        {id: "n2", position: {x:300, y:200}, size: 6},
+        {id: "n3", position: {x:400, y:100}, size: 6},
+    ],
+    edges: [
+        {id: "e1", ends: [{node:"n1", index:0}, {node:"n2", index:2}]},
+        {id: "e2", ends: [{node:"n2", index:5}, {node:"n3", index:3}]},
+    ],
+};
+
+ReactDOM.render(<GraphContainer>{data}</GraphContainer>, document.getElementById("container"));

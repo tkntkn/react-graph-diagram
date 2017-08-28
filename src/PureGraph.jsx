@@ -1,21 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {getOnEventMethods, getOnEventProps} from './ReactUtils';
 
 export const PureGraph = function (Node, Edge) {
     return class extends React.Component {
-        componentWillMount  () { this.calcHelpers(); }
-        componentWillUpdate () { this.calcHelpers(); }
+        componentWillMount  () { if (!this.props.keepGraph) this.prepareGraph(); }
+        componentWillUpdate () { if (!this.props.keepGraph) this.prepareGraph(); }
         componentDidMount   () { this.renderEdges(); }
         componentDidUpdate  () { this.renderEdges(); }
-        mapNodeToProps (node) { return Object.assign(this.nodeHandlers, {node, renderEdges: this.renderEdges}); }
-        mapEdgeToProps (edge) { return Object.assign(this.edgeHandlers, {edge}); }
+        mapNodeToProps (node) { return Object.assign(this.nodeEventHandlers, {node, renderEdges: this.renderEdges}); }
+        mapEdgeToProps (edge) { return Object.assign(this.edgeEventHandlers, {edge}); }
         assignPositionToEnd  (end)  { return Object.assign({}, end,  {position: this.calcEndPosition(end)}); }
         assignPositionToEdge (edge) { return Object.assign({}, edge, {ends: edge.ends.map(this.assignPositionToEnd.bind(this))}); }
 
         render () {
+            const handlers = getOnEventProps(this.props, "Graph", [this]);
             const style = { width: "100%", height: "100%", position: "absolute" };
             return (
-                <div className="graph-diagram" style={style}>
+                <div className="graph-diagram" style={style} {...handlers}>
                     <svg className="edges" ref="edges" style={style}></svg>
                     <div className="nodes" ref="nodes" style={style}>{ this.nodes.map(this.renderNode.bind(this)) }</div>
                 </div>
@@ -23,7 +25,7 @@ export const PureGraph = function (Node, Edge) {
         }
 
         renderEdges () {
-            this.edges = this.edges.map(this.assignPositionToEdge.bind(this))
+            this.edges = this.edges.map(this.assignPositionToEdge.bind(this));
             ReactDOM.render( <g>{this.edges.map(this.renderEdge.bind(this))}</g>, this.refs["edges"]);
         }
 
@@ -35,14 +37,11 @@ export const PureGraph = function (Node, Edge) {
             return <Edge key={edge.id} {...this.mapEdgeToProps(edge)} />;
         }
 
-        calcHelpers () {
+        prepareGraph () {
             this.nodes = this.props.children.nodes;
             this.edges = this.props.children.edges;
-
-            const nodeHandlerNames = Object.getOwnPropertyNames(this.props).filter(name => name.startsWith("onNode"));
-            this.nodeHandlers = Object.assign({}, ...nodeHandlerNames.map(name => ({[name]: this.props[name]}) ));
-            const edgeHandlerNames = Object.getOwnPropertyNames(this.props).filter(name => name.startsWith("onEdge"));
-            this.edgeHandlers = Object.assign({}, ...edgeHandlerNames.map(name => ({[name]: this.props[name]}) ));
+            this.nodeEventHandlers = getOnEventProps(this.props, "Node", null, false);
+            this.edgeEventHandlers = getOnEventProps(this.props, "Edge", null, false);
         }
 
         calcEndPosition (end) {

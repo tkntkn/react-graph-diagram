@@ -1,24 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {DynamicContainer, DynamicPureGraph} from 'react-graph-diagram';
-import * as RGD from 'react-graph-diagram';
-
-class Edge extends React.Component {
-    render () {
-        const [a, b] = this.props.edge.ends.map(end => end.position);
-        return (
-            <g>
-                <path className="edge" d={`M${a.x},${a.y} L${b.x},${b.y}`} />
-                <path className="edge-wrapper" d={`M${a.x},${a.y} L${b.x},${b.y}`}
-                    onDoubleClick={this.props.onEdgeDoubleClick(this.props.edge)} />
-            </g>
-        );
-    }
-}
+import {DynamicContainer, DynamicGraph, PureGraph, ReactUtils} from 'react-graph-diagram';
 
 class Node extends React.Component {
     render () {
-        const handlers = RGD.getOnEventProps(this.props, "Node", [this.props.node]);
+        const handlers = ReactUtils.getOnEventProps(this.props, "Node", [this.props.node]);
         const style = {left: this.props.node.position.x, top: this.props.node.position.y};
         return (
             <div draggable className="node" ref="point" style={style} {...handlers}>
@@ -28,7 +14,20 @@ class Node extends React.Component {
     }
 }
 
-const Graph = DynamicPureGraph(Node, Edge);
+class Edge extends React.Component {
+    render () {
+        const handlers = ReactUtils.getOnEventProps(this.props, "Edge", [this.props.edge]);
+        const [a, b] = this.props.edge.ends.map(end => end.position);
+        return (
+            <g>
+                <path className="edge" d={`M${a.x},${a.y} L${b.x},${b.y}`} />
+                <path className="edge-wrapper" d={`M${a.x},${a.y} L${b.x},${b.y}`} {...handlers} />
+            </g>
+        );
+    }
+}
+
+const Graph = DynamicGraph(PureGraph(Node, Edge));
 const GraphContainer = DynamicContainer(Graph);
 
 const data = {
