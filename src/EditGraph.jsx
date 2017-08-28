@@ -9,14 +9,20 @@ EditGraph.Edge = class extends FlowGraph.Edge {}
 
 EditGraph.Port = class extends FlowGraph.Port {
     static getId (port, props) {
-        return (port.id === FREE_PORT_ID) ? port.id : super.getId(port, props);
+        return port.id || super.getId(port, props);
+    }
+
+    static makeList (node, props) {
+        if (EditGraph.Node.getId(node) === POINTER_NODE_ID) return [];
+        return super.makeList(node, props);
     }
 
     static getPosition (port, element, props) {
-        if (EditGraph.Port.getId(port) === FREE_PORT_ID) return port.position;
+        if (EditGraph.Port.getId(port) === POINTER_PORT_ID) return port.position;
         return super.getPosition(port, element, props);
     }
 }
 
 export default EditGraph;
-export const FREE_PORT_ID = "react-graph-diagram-FREE_PORT";
+export const POINTER_NODE_ID = "react-graph-diagram-POINTER_NODE_ID";
+export const POINTER_PORT_ID = "react-graph-diagram-POINTER_PORT";
