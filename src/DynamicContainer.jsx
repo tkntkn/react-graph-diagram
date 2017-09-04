@@ -27,7 +27,7 @@ export const DynamicContainer = Graph => {
         }
 
         makeNewNode (position, size) {
-            return {id:ID(), position, size}
+            return {id:ID(), position, size: Math.floor(Math.random() * 10 + 1)}
         }
 
         makeEdge (end1, end2) {
@@ -49,7 +49,7 @@ export const DynamicContainer = Graph => {
         onGraphDoubleClick (target, event) {
             if (this.doubleClickStopPropagate) { this.doubleClickStopPropagate = false; return; }
             this.setState({
-                nodes: this.state.nodes.concat(this.makeNewNode(pointer(event), Math.floor(Math.random() * 10 + 1))),
+                nodes: this.state.nodes.concat(this.makeNewNode(pointer(event))),
             }, this.forceUpdate.bind(this));
         }
 
