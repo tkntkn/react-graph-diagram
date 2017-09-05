@@ -1,10 +1,9 @@
-export * from './PureGraph';
-export * from './PortGraph';
-export {default as FlowGraph} from './FlowGraph';
-export {default as EditGraph} from './EditGraph';
-export * from './EditGraph';
-export * from './DynamicContainer';
+import * as BaseGraph from './components/base';
+import * as PureGraph from './components/pure';
+// import * as PortGraph from './components/port';
+// import * as FlowGraph from './components/flow';
+// export {BaseGraph, PureGraph, PortGraph, FlowGraph};
+export {BaseGraph, PureGraph};
 
-import * as Utils from './Utils';
-import * as ReactUtils from './ReactUtils';
-export {Utils, ReactUtils}
+import * as Utils from './utils';
+export {Utils}

@@ -19,9 +19,9 @@ const selfImport = option => {
 };
 
 export default {
-    input: `sample/${process.env.name}.jsx`,
+    input: `sample/${process.env.from}`,
     output: {
-        file: `sample/${process.env.name}.js`,
+        file: `sample/${process.env.to}`,
         sourcemap: 'inline',
         format: 'es'
     },
