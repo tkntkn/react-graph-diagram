@@ -1,7 +1,7 @@
 html, body { width: 100%; height: 100%; margin: 0; }
 #container { position: absolute; top: 0;  left: 0; width: 100%; height: 100%; }
-.nodes { position: absolute; z-index: auto; top: 0; left: 0; pointer-events: none;  user-select: none;}
-.edges { position: absolute; z-index: auto; top: 0; left: 0;}
+.nodes { position: absolute; z-index: auto; top: 0; left: 0; pointer-events: none; }
+.edges { position: absolute; z-index: auto; top: 0; left: 0; }
 .edge  { position: absolute; z-index: 2; }
 .node  { position: absolute; z-index: 3; }
 
@@ -40,3 +40,43 @@ html, body { width: 100%; height: 100%; margin: 0; }
     height: 4px;
     border-radius: 50%;
 }
+
+/*
+html, body { width: 100%; height: 100%; margin: 0; }
+#container { width: 100%; height: 100%; }
+
+svg { z-index: 1; }
+
+.node {
+    position: absolute;
+    border: solid 3px black;
+    background-color: white;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+}
+
+.edge {
+    fill: none;
+    stroke: #000;
+    stroke-width: 4px;
+    stroke-linecap: round;
+}
+
+.port {
+    position: absolute;
+    border: solid 3px black;
+    background-color: white;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+
+.port.in {
+    top: calc(-1 * ((3px + 2 * 3px + 4px) / 2));
+}
+
+.port.out {
+    bottom: calc(-1 * ((3px + 2 * 3px + 4px) / 2));
+} */
