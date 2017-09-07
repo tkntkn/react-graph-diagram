@@ -32,5 +32,5 @@ const Edge = class extends PureGraph.Edge {
 
 const Graph = PureGraph.Graph(Node, Edge);
 
-import {pureData as data} from './data';
+import {PureData as data} from './data';
 ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
