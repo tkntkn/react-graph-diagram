@@ -14,9 +14,9 @@ const resolveJSX = option => {
 };
 
 export default {
-    input: 'src/main.js',
+    input: 'lib.src/react-graph-diagram.js',
     output: {
-        file: 'dist/main.js',
+        file: 'lib/react-graph-diagram.js',
         format: 'es'
     },
     plugins: [

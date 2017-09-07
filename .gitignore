@@ -1,4 +1,4 @@
 node_modules
-dist
+lib
 sample/**/index.js
 *.tgz
