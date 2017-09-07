@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {PureGraph} from 'react-graph-diagram';
-import {selectBindedPrototypes, pointer, dummyImage} from './utils';
-import {PureData, DataHandler, PointerEnd, NewPureEdge, NewPureNode} from './data';
-import {Movable} from './movable';
-// import {Linkable} from './linkable';
+import {PureGraph, Movable, Linkable} from 'react-graph-diagram';
+import {selectBindedPrototypes, pointer} from './utils';
+import {PureData, DataHandler, NewEdge, NewPureNode} from './data';
 
 const check = v => [console.log(v), v][1];
 
@@ -18,7 +16,7 @@ const Node = class extends MovablePureNode {
         const handlers = selectBindedPrototypes(this, /^on/);
         const [left, top] = [this.position.x, this.position.y];
         const style = {left, top};
-        if (this.props.node.id === PointerEnd().id) {
+        if (this.props.node.id ===  "react-graph-diagram::POINTER_END_ID") {
             // style.display = 'none';
             style.pointerEvents = 'none';
         }
@@ -39,28 +37,23 @@ const Node = class extends MovablePureNode {
     }
 
     onDragStart (event) {
-        if ( super.onDragStart(event) ) {
-            ;
-        } else {
-            event.dataTransfer.setData('endDrag', JSON.stringify(this.props.node));
-            this.props.onEndLinkingStart(this.props.node, pointer(event));
+        if ( ! super.onDragStart(event) ) {
+            event.dataTransfer.setData('linkSrcEnd', JSON.stringify(this.props.node));
+            this.props.onLinkStart(event, this.props.node);
         }
     }
 
     onDrag (event) {
-        if ( super.onDrag(event) ) {
-            ;
-        } else {
-            this.props.onEndLinking(this.props.node, pointer(event));
+        if ( ! super.onDrag(event) ) {
+            this.props.onLink(event);
         }
     }
 
     onDragEnd (event) {
-        if ( super.onDragEnd(event) ) {
-            this.props.onNodeUpdate(this.props.node, { position: this.position });
-        } else {
-            this.props.onEndLinkingEnd(this.props.node, pointer(event));
+        if ( ! super.onDragEnd(event) ) {
+            this.props.onLinkEnd(event);
         }
+        this.props.onNodeUpdate(this.props.node, { position: this.position });
     }
 
     onDragEnter (event) {
@@ -72,8 +65,11 @@ const Node = class extends MovablePureNode {
     }
 
     onDrop (event) {
-        const src = JSON.parse(event.dataTransfer.getData('endDrag') || "false");
-        this.props.onEndLink(src, this.props.node);
+        const src = JSON.parse(event.dataTransfer.getData('linkSrcEnd') || "false");
+        if (src) {
+            const dst = this.props.node;
+            this.props.onLinkMake(src, dst);
+        }
     }
 }
 
@@ -96,7 +92,9 @@ const Edge = class extends PureGraph.Edge {
     }
 }
 
-const Graph =  class extends PureGraph.Graph(Node, Edge) {
+const LinkablePureGraph = Linkable(PureGraph.Graph(Node, Edge), {});
+
+const Graph =  class extends LinkablePureGraph {
     constructor (props) {
         super(props);
         this.state = PureData;
@@ -105,7 +103,7 @@ const Graph =  class extends PureGraph.Graph(Node, Edge) {
         };
         this.nodeEventHandlers = Object.assign({},
             selectBindedPrototypes(this, /^onNode/),
-            selectBindedPrototypes(this, /^onEnd/),
+            selectBindedPrototypes(this, /^onLink/),
         );
         this.edgeEventHandlers = selectBindedPrototypes(this, /^onEdge/);
     }
@@ -113,6 +111,7 @@ const Graph =  class extends PureGraph.Graph(Node, Edge) {
     prepareGraph () {
         this.nodes = this.state.nodes;
         this.edges = this.state.edges;
+        super.prepareGraph();
         this.dataHandler = DataHandler(this.state);
     }
 
@@ -141,26 +140,9 @@ const Graph =  class extends PureGraph.Graph(Node, Edge) {
         this.setState(state, this.forceUpdate.bind(this));
     }
 
-    onEndLinkingStart (node, position) {
-        this.ptrnode = PointerEnd(position);
-        const state = this.dataHandler.addNodeEdge(this.ptrnode, NewPureEdge(this.ptrnode, node));
-        this.setState(state, this.forceUpdate.bind(this, () => this.refs[this.ptrnode.id].updatePosition(position, true)));
-    }
-
-    onEndLinking (node, position) {
-        this.refs[this.ptrnode.id].updatePosition(position, true);
-    }
-
-    onEndLinkingEnd (node, position) {
-        this.refs[this.ptrnode.id].updatePosition(position, false);
-        this.setState(this.dataHandler.removeNode(this.ptrnode), this.forceUpdate.bind(this));
-        this.ptrnode = false;
-    }
-
-    onEndLink (src, dst) {
-        if (src && dst) {
-            this.setState(this.dataHandler.addEdge(NewPureEdge(src, dst)), this.forceUpdate.bind(this));
-        }
+    onLinkMake (src, dst) {
+        const state = this.dataHandler.addEdge(NewEdge(src, dst));
+        this.setState(state, this.forceUpdate.bind(this));
     }
 };
 

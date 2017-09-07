@@ -5,5 +5,8 @@ import * as PureGraph from './components/pure';
 // export {BaseGraph, PureGraph, PortGraph, FlowGraph};
 export {BaseGraph, PureGraph};
 
+export {Movable}  from './extension/movable';
+export {Linkable} from './extension/linkable';
+
 import * as Utils from './utils';
 export {Utils}

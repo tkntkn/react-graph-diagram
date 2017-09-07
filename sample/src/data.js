@@ -13,23 +13,23 @@ const is = {
 }
 
 export const DataHandler = data => ({
-    addNode: node => Object.assign({}, data, {
+    addNode: node => ({
         nodes: data.nodes.concat(node)
     }),
-    removeNode: node => Object.assign({}, data, {
+    removeNode: node => ({
         nodes: data.nodes.filter(is.notSameAs(node)),
         edges: data.edges.filter(is.notLinking(node)),
     }),
-    updateNode: (node, update) => Object.assign({}, data, {
+    updateNode: (node, update) => ({
         nodes: data.nodes.map(when(is.sameAs(node))(assign(update)))
     }),
-    addEdge: edge => Object.assign({}, data, {
+    addEdge: edge => ({
         edges: data.edges.concat(edge)
     }),
-    removeEdge: edge => Object.assign({}, data, {
+    removeEdge: edge => ({
         edges: data.edges.filter(is.notSameAs(edge))
     }),
-    addNodeEdge: (node, edge) => Object.assign({}, data, {
+    addNodeEdge: (node, edge) => ({
         nodes: data.nodes.concat(node),
         edges: data.edges.concat(edge),
     }),
@@ -39,10 +39,10 @@ export const NewPureNode = position => ({id:ID(), position});
 export const NewPortNode = position => ({id:ID(), position, size: RANDN(10)});
 export const NewFlowNode = position => ({id:ID(), position, in: RANDN(3), out: RANDN(3)});
 
-export const NewPureEdge = (src,dst) => ({id:ID(), ends:{src,dst}});
+export const NewEdge = (src,dst) => ({id:ID(), ends:{src,dst}});
 
 export const POINTER_END_ID = "react-graph-diagram::POINTER_END_ID";
-export const PointerEnd = position => ({id:POINTER_END_ID, position});
+export const PointerEnd  = position => ({id:POINTER_END_ID, position});
 
 export const PureData = {
     nodes: [

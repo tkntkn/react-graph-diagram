@@ -2,7 +2,7 @@ export const polar = (r, θ) => ({x:r*Math.cos(θ), y:r*Math.sin(θ)});
 export const vecaddsub = (a,b,c) => ({x:a.x+b.x-c.x, y:a.y+b.y-c.y});
 export const pointer = event => ({x:event.clientX, y:event.clientY});
 
-export const dummyImage = document.createElement('img'); dummyImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 
 export const getPrototypeNames = (head, functionOnly=false) => {
     const names = [];
