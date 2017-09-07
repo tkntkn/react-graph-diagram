@@ -1,15 +1,17 @@
 {
   "name": "react-graph-diagram",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "react components for graph-type diagram",
   "main": "lib/react-graph-diagram.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "rollup -c"
   },
+  "repository": "https://github.com/tkntkn/react-graph-diagram.git",
   "files": [
     "README.md",
     "rollup.config.js",
+    "rollup.config.sample.js",
     "lib.src",
     "sample.src",
     "sample"
