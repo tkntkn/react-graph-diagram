@@ -1,5 +1,5 @@
 # react-graph-diagram
-a simplest graph-type diagram react component
+simple react components for graph-type diagram
 
 # sample
 see /sample for more samples.

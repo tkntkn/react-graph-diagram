@@ -19,7 +19,7 @@ const selfImport = option => {
 };
 
 export default {
-    input: `sample/${process.env.from}`,
+    input: `sample.src/${process.env.from}`,
     output: {
         file: `sample/${process.env.to}`,
         sourcemap: 'inline',
