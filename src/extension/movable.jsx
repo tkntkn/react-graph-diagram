@@ -4,17 +4,37 @@ const dummyImage = document.createElement('img');
 dummyImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const defaultOptions = {
-    trigger: event => true,
     propsToPosition: props => ({x:0, y:0}),
     preservePosition: false,
 }
 
 export const Movable = (ReactComponent, options={}) => {
     options = Object.assign({}, defaultOptions, options);
+
+    const onMoveStart = function (event) {
+        event.dataTransfer.setDragImage(dummyImage, 0, 0);
+        this.updatePosition(pointer(event), true);
+    }
+
+    const onMove = function (event) {
+        this.updatePosition(pointer(event), true, true);
+    }
+
+    const onMoveFinish = function (event) {
+        this.updatePosition(pointer(event), false);
+    }
+
     return class extends ReactComponent {
         constructor (props) {
             super(props);
             this.position = options.propsToPosition(props);
+            this.prevPosition = null;
+            this.moving = false;
+            this.moveHandlers = {
+                onMoveStart: onMoveStart.bind(this),
+                onMove: onMove.bind(this),
+                onMoveFinish: onMoveFinish.bind(this)
+            };
         }
 
         componentWillReceiveProps (nextProps) {
@@ -25,7 +45,6 @@ export const Movable = (ReactComponent, options={}) => {
         }
 
         updatePosition (position, moving, bugCut) {
-            console.log(bugCut);
             if (bugCut && pointer(event).x === 0 && pointer(event).y === 0) return;
             if (this.moving && this.prevPosition) {
                 this.position = vecaddsub(this.position, position, this.prevPosition);
@@ -33,33 +52,6 @@ export const Movable = (ReactComponent, options={}) => {
             }
             this.prevPosition = position;
             this.moving = moving;
-        }
-
-        onDragStart (event) {
-            event.dataTransfer.setDragImage(dummyImage, 0, 0);
-            if (options.trigger(event)) {
-                this.updatePosition(pointer(event), true);
-                return true;
-            }
-        }
-
-        onDrag (event) {
-            if (options.trigger(event) && this.moving) {
-                this.updatePosition(pointer(event), true, true);
-                return true;
-            } else if (this.moving) {
-                return true;
-            }
-        }
-
-        onDragEnd (event) {
-            if (options.trigger(event) && this.moving) {
-                this.updatePosition(pointer(event), false);
-                return true;
-            } else if (this.moving) {
-                this.moving = false;
-                return true;
-            }
         }
     }
 }

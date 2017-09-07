@@ -4,19 +4,6 @@ import {PortGraph, Movable, Linkable, BaseGraph} from 'react-graph-diagram';
 import {selectBindedPrototypes, pointer, polar} from './utils';
 import {PortData, DataHandler, NewEdge, NewPortNode, POINTER_END_ID} from './data';
 
-const DummyEnd = Movable(class extends BaseGraph.End {
-        render () {
-            return null;
-        }
-
-        getEndPosition () {
-            return this.position;
-        }
-    }, {
-        propsToPosition: props => props.node.position
-    }
-);
-
 const MovablePortNode = Movable(PortGraph.Node, {
     propsToPosition: props => props.node.position
 });
@@ -72,7 +59,7 @@ class Port extends PortGraph.Port {
     }
 
     onDragEnd (event) {
-        this.props.onLinkEnd(event);
+        this.props.onLinkFinish(event);
     }
 
     onDragEnter (event) {
@@ -127,18 +114,6 @@ class Graph extends LinkablePureGraph {
         this.edges = this.state.edges;
         this.dataHandler = DataHandler(this.state);
         super.prepareGraph();
-    }
-
-    renderNode (node) {
-        if (node.id === "react-graph-diagram::POINTER_END_ID") {
-            return <DummyEnd
-                key={node.id} ref={node.id}
-                {...this.makeNodeProps(node)}
-                {...this.makeEndProps(node)}
-            />
-        } else {
-            return super.renderNode(node);
-        }
     }
 
     makeGraphProps () { return Object.assign(super.makeGraphProps(), this.graphEventHandlers); }

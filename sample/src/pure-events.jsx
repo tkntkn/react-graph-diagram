@@ -7,7 +7,6 @@ import {PureData, DataHandler, NewEdge, NewPureNode} from './data';
 const check = v => [console.log(v), v][1];
 
 const MovablePureNode = Movable(PureGraph.Node, {
-    trigger: event => event.ctrlKey,
     propsToPosition: props => props.node.position
 })
 
@@ -16,10 +15,6 @@ const Node = class extends MovablePureNode {
         const handlers = selectBindedPrototypes(this, /^on/);
         const [left, top] = [this.position.x, this.position.y];
         const style = {left, top};
-        if (this.props.node.id ===  "react-graph-diagram::POINTER_END_ID") {
-            // style.display = 'none';
-            style.pointerEvents = 'none';
-        }
         return (
             <div draggable className="node" ref="point" style={style} {...handlers}>
                 {this.props.node.id}
@@ -37,23 +32,29 @@ const Node = class extends MovablePureNode {
     }
 
     onDragStart (event) {
-        if ( ! super.onDragStart(event) ) {
+        if (event.ctrlKey) {
+            this.moveHandlers.onMoveStart(event);
+        } else {
             event.dataTransfer.setData('linkSrcEnd', JSON.stringify(this.props.node));
             this.props.onLinkStart(event, this.props.node);
         }
     }
 
     onDrag (event) {
-        if ( ! super.onDrag(event) ) {
+        if (event.ctrlKey || this.moving) {
+            this.moveHandlers.onMove(event);
+        } else {
             this.props.onLink(event);
         }
     }
 
     onDragEnd (event) {
-        if ( ! super.onDragEnd(event) ) {
-            this.props.onLinkEnd(event);
+        if (event.ctrlKey || this.moving) {
+            this.moveHandlers.onMoveFinish(event);
+            this.props.onNodeUpdate(this.props.node, { position: this.position });
+        } else {
+            this.props.onLinkFinish(event);
         }
-        this.props.onNodeUpdate(this.props.node, { position: this.position });
     }
 
     onDragEnter (event) {
@@ -68,7 +69,7 @@ const Node = class extends MovablePureNode {
         const src = JSON.parse(event.dataTransfer.getData('linkSrcEnd') || "false");
         if (src) {
             const dst = this.props.node;
-            this.props.onLinkMake(src, dst);
+            this.props.onNodeLinkMake(src, dst);
         }
     }
 }
@@ -98,13 +99,8 @@ const Graph =  class extends LinkablePureGraph {
     constructor (props) {
         super(props);
         this.state = PureData;
-        this.graphEventHandlers = {
-            onDoubleClick: this.onDoubleClick.bind(this)
-        };
-        this.nodeEventHandlers = Object.assign({},
-            selectBindedPrototypes(this, /^onNode/),
-            selectBindedPrototypes(this, /^onLink/),
-        );
+        this.graphEventHandlers = selectBindedPrototypes(this, /^onDoubleClick/);
+        this.nodeEventHandlers = selectBindedPrototypes(this, /^onNode/);
         this.edgeEventHandlers = selectBindedPrototypes(this, /^onEdge/);
     }
 
@@ -116,7 +112,7 @@ const Graph =  class extends LinkablePureGraph {
     }
 
     makeGraphProps () { return Object.assign(super.makeGraphProps(), this.graphEventHandlers); }
-    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), this.nodeEventHandlers); }
+    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), this.nodeEventHandlers, this.linkHandlers); }
     makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), this.edgeEventHandlers); }
 
     onDoubleClick (event) {
@@ -135,13 +131,13 @@ const Graph =  class extends LinkablePureGraph {
         this.setState(state, this.forceUpdate.bind(this));
     }
 
-    onEdgeRemove (edge) {
-        const state = this.dataHandler.removeEdge(edge);
+    onNodeLinkMake (src, dst) {
+        const state = this.dataHandler.addEdge(NewEdge(src, dst));
         this.setState(state, this.forceUpdate.bind(this));
     }
 
-    onLinkMake (src, dst) {
-        const state = this.dataHandler.addEdge(NewEdge(src, dst));
+    onEdgeRemove (edge) {
+        const state = this.dataHandler.removeEdge(edge);
         this.setState(state, this.forceUpdate.bind(this));
     }
 };

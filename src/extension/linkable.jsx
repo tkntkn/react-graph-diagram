@@ -8,76 +8,75 @@ dummyImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAA
 
 const POINTER_END_ID  = "react-graph-diagram::POINTER_END_ID";
 const POINTER_EDGE_ID = "react-graph-diagram::POINTER_EDGE_ID";
-const defaultOptions = {
-    linkEndType: 'nodes',
-    newLinkEnd: position => ({id:POINTER_END_ID, position}),
-    newLinkEdge: (src,dst) => ({id:POINTER_EDGE_ID, ends:{src,dst}}),
+
+const check = v => [v, console.log(v)];
+
+const propsToPosition = props => props.node.position;
+class LinkNode extends Movable(End, {propsToPosition}) {
+    render () { return null; }
+    getEndPosition () { return this.position; }
 }
 
-const MovableEnd = Movable(End, {
-    propsToPosition: props => props.node.position
-})
+export const Linkable = (ReactComponent) => {
+    const onLinkStart = function (event, src) {
+        event.dataTransfer.setDragImage(dummyImage, 0, 0);
+        const position = pointer(event);
+        this.linkNode = {id:POINTER_END_ID, position};
+        this.linkEdge = {id:POINTER_EDGE_ID, ends:{src, dst:this.linkNode}};
+        this.prepareGraph();
+        this.forceUpdate(() => this.refs[POINTER_END_ID].updatePosition(position, true));
+    };
 
-class PointerEnd extends MovableEnd {
-    render () {
-        return null;
-    }
+    const onLink = function (event) {
+        const position = pointer(event);
+        if (!this.linkNode) {
+            console.error('Link not started.')
+        } else {
+            const ref = this.refs[POINTER_END_ID];
+            if (ref) {
+                ref.updatePosition(position, true, true);
+            } else {
+                this.forceUpdate(() => {
+                    this.refs[POINTER_END_ID].updatePosition(position, true, true);
+                });
+            }
+        }
+    };
 
-    getEndPosition () {
-        return this.position;
-    }
-}
+    const onLinkFinish = function (event) {
+        this.linkNode = null;
+        this.linkEdge = null;
+        this.prepareGraph();
+        this.forceUpdate();
+    };
 
-export const Linkable = (ReactComponent, options={}) => {
-    options = Object.assign({}, defaultOptions, options || {});
     return class extends ReactComponent {
         constructor (props) {
             super(props);
-            this.linkEnd  = null;
+            this.linkNode = null;
             this.linkEdge = null;
+            this.linkHandlers = {
+                onLinkStart: onLinkStart.bind(this),
+                onLink: onLink.bind(this),
+                onLinkFinish: onLinkFinish.bind(this)
+            };
         }
 
-        render () {
-            console.log(super.render());
-            return React.cloneElement(super.render());
+        renderNode (node) {
+            if (node.id === POINTER_END_ID) {
+                return <LinkNode
+                    key={node.id} ref={node.id}
+                    {...this.makeNodeProps(node)}
+                    {...this.makeEndProps(node)}
+                />
+            } else {
+                return super.renderNode(node);
+            }
         }
 
         prepareGraph () {
-            if (this.linkEnd) {
-                this[options.linkEndType] = this[options.linkEndType].concat(this.linkEnd);
-            }
-            if (this.linkEdge) {
-                this.edges = this.edges.concat(this.linkEdge);
-            }
-        }
-
-        onLinkStart (event, src) {
-            event.dataTransfer.setDragImage(dummyImage, 0, 0);
-            const position = pointer(event);
-            this.linkEnd  = options.newLinkEnd(position);
-            this.linkEdge = options.newLinkEdge(src, this.linkEnd);
-            this.prepareGraph();
-            this.forceUpdate(() => this.refs[this.linkEnd.id].updatePosition(position, true));
-        }
-
-        onLink (event) {
-            const position = pointer(event);
-            if (!this.linkEnd) {
-                console.error('Link not started.')
-            } else if (!this.refs[this.linkEnd.id]) {
-                this.forceUpdate(() => {
-                    this.refs[this.linkEnd.id].updatePosition(position, true, true);
-                });
-            } else {
-                this.refs[this.linkEnd.id].updatePosition(position, true, true);
-            }
-        }
-
-        onLinkEnd (event) {
-            this.linkEnd  = null;
-            this.linkEdge = null;
-            this.prepareGraph();
-            this.forceUpdate();
+            this.nodes = this.nodes.concat(this.linkNode || []);
+            this.edges = this.edges.concat(this.linkEdge || []);
         }
     }
 }
