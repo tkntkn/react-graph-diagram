@@ -9,7 +9,6 @@ export const End = class extends React.Component {
         this.props.__updateEdges__(this.getEndPosition());
     }
 
-    getEndId () { throw new Error('Please implement "getEndId" method of End class.'); }
     getEndPosition () { throw new Error('Please implement "getEndPosition" method of End class.'); }
 }
 

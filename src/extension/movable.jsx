@@ -24,7 +24,9 @@ export const Movable = (ReactComponent, options={}) => {
             }
         }
 
-        updatePosition (position, moving) {
+        updatePosition (position, moving, bugCut) {
+            console.log(bugCut);
+            if (bugCut && pointer(event).x === 0 && pointer(event).y === 0) return;
             if (this.moving && this.prevPosition) {
                 this.position = vecaddsub(this.position, position, this.prevPosition);
                 this.forceUpdate();
@@ -43,8 +45,7 @@ export const Movable = (ReactComponent, options={}) => {
 
         onDrag (event) {
             if (options.trigger(event) && this.moving) {
-                if (pointer(event).x === 0 && pointer(event).y === 0) return;
-                this.updatePosition(pointer(event), true);
+                this.updatePosition(pointer(event), true, true);
                 return true;
             } else if (this.moving) {
                 return true;
