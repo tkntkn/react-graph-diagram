@@ -1,6 +1,8 @@
 import React from 'react';
 import * as Base from './base';
 import * as PureGraph from './pure';
+import {Movable} from '../extensions/movable';
+import {Linkable} from '../extensions/linkable';
 import {NArray} from '../utils';
 
 const portId = port => port.id || `port-${port.node}-${port.index}`;
@@ -44,3 +46,6 @@ export const Graph = (Node=Node, Port=Port, Edge=Edge) => class extends PureGrap
     makePortProps (port) { return Object.assign(super.makeEndProps(port), { port }); }
     // inherit: makeEdgeProps (edge)
 };
+
+export const MovableNode = Movable(Node, {propsToPosition: props => props.node.position});
+export const LinkableGraph = (Node, Port, Edge) => Linkable(Graph(Node, Port, Edge));

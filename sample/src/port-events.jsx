@@ -1,14 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {PortGraph, Movable, Linkable, BaseGraph} from 'react-graph-diagram';
+import {PortGraph, PortStore} from 'react-graph-diagram';
 import {selectBindedPrototypes, pointer, polar} from './utils';
-import {PortData, DataHandler, NewEdge, NewPortNode, POINTER_END_ID} from './data';
 
-const MovablePortNode = Movable(PortGraph.Node, {
-    propsToPosition: props => props.node.position
-});
-
-class Node extends MovablePortNode {
+class Node extends PortGraph.MovableNode {
     render () {
         const handlers = selectBindedPrototypes(this, /^on/);
         const [left, top] = [this.position.x, this.position.y];
@@ -106,9 +101,11 @@ class Edge extends PortGraph.Edge {
     }
 }
 
-const LinkablePureGraph = Linkable(PortGraph.Graph(Node, Port, Edge), {})
+import {PortGraphSample as initData} from './sample';
+const {makeNode, makeEdge, assign, when, predicate} = PortStore;
+const is = predicate;
 
-class Graph extends LinkablePureGraph {
+class Graph extends PortGraph.LinkableGraph(Node, Port, Edge) {
     makeGraphProps () { return Object.assign(super.makeGraphProps(), selectBindedPrototypes(this, /^onDoubleClick/)); }
     makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), selectBindedPrototypes(this, /^onNode/)); }
     makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), selectBindedPrototypes(this, /^onEdge/)); }
@@ -116,40 +113,43 @@ class Graph extends LinkablePureGraph {
 
     constructor (props) {
         super(props);
-        this.state = PortData;
+        this.state = initData;
     }
 
     prepareGraph () {
         this.nodes = this.state.nodes;
         this.edges = this.state.edges;
-        this.dataHandler = DataHandler(this.state);
-        super.prepareGraph();
     }
 
     onDoubleClick (event) {
-        const newnode = NewPortNode(pointer(event));
-        const state = this.dataHandler.addNode(newnode);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            nodes: this.state.nodes.concat(makeNode(pointer(event), Math.floor(Math.random() * 10 + 1)))
+        }, this.forceUpdate.bind(this));
     }
 
     onNodeRemove (node) {
-        const state = this.dataHandler.removeNode(node);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            nodes: this.state.nodes.filter(is.notSameAs(node)),
+            edges: this.state.edges.filter(is.notLinking(node)),
+        }, this.forceUpdate.bind(this));
     }
 
     onNodeUpdate (node, update) {
-        const state = this.dataHandler.updateNode(node, update);
-        this.setState(state, this.forceUpdate.bind(this));
-    }
-
-    onEdgeRemove (edge) {
-        const state = this.dataHandler.removeEdge(edge);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            nodes: this.state.nodes.map(when(is.sameAs(node))(assign(update)))
+        }, this.forceUpdate.bind(this));
     }
 
     onLinkMake (src, dst) {
-        const state = this.dataHandler.addEdge(NewEdge(src, dst));
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            edges: this.state.edges.concat(makeEdge(src, dst))
+        }, this.forceUpdate.bind(this));
+    }
+
+    onEdgeRemove (edge) {
+        this.setState({
+            edges: this.state.edges.filter(is.notSameAs(edge))
+        }, this.forceUpdate.bind(this));
     }
 }
 

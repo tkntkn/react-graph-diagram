@@ -7,9 +7,8 @@ export {BaseGraph, PureGraph, PortGraph};
 
 import * as PureStore from './stores/pure';
 import * as PortStore from './stores/port';
-// import * as FlowStore from './stores/flow';
-// export {BaseStore, PureStore, PortStore, FlowStore};
-export {PureStore, PortStore};
+import * as FlowStore from './stores/flow';
+export {PureStore, PortStore, FlowStore};
 
 export {Movable}  from './extensions/movable';
 export {Linkable} from './extensions/linkable';
