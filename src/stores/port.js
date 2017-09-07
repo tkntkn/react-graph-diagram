@@ -1,16 +1,16 @@
 const check = v => [console.log(v), v][1]
+const assign = update => original => Object.assign({}, original, update);
+const when = pred => func => obj => pred(obj) ? func(obj) : obj
 
 const ID = (function () {let i = 1; return () => `ID${i++}`;})();
 const RANDN = n => Math.floor(Math.random() * n + 1);
 
-export const is = {
+const is = {
     sameAs:     obj1 => obj2 => obj1.id === obj2.id,
     notSameAs:  obj1 => obj2 => !is.sameAs(obj1)(obj2),
     linking:    end => edge => Object.values(edge.ends).some(is.sameAs(end)),
     notLinking: end => edge => !is.linking(end)(edge),
 }
-export const assign = update => original => Object.assign({}, original, update);
-export const when = pred => func => obj => pred(obj) ? func(obj) : obj
 
 export const DataHandler = data => ({
     addNode: node => ({
@@ -35,6 +35,7 @@ export const DataHandler = data => ({
     }),
 });
 
+export const NewPureNode = position => ({id:ID(), position});
 export const NewPortNode = position => ({id:ID(), position, size: RANDN(10)});
 export const NewFlowNode = position => ({id:ID(), position, in: RANDN(3), out: RANDN(3)});
 
@@ -42,6 +43,18 @@ export const NewEdge = (src,dst) => ({id:ID(), ends:{src,dst}});
 
 export const POINTER_END_ID = "react-graph-diagram::POINTER_END_ID";
 export const PointerEnd  = position => ({id:POINTER_END_ID, position});
+
+export const PureData = {
+    nodes: [
+        {id: "n1", position: {x: 100, y: 150}},
+        {id: "n2", position: {x: 300, y: 200}},
+        {id: "n3", position: {x: 400, y: 100}},
+    ],
+    edges: [
+        {id: "e1", ends: {src:{id:"n1"}, dst:{id:"n2"}}},
+        {id: "e2", ends: {src:{id:"n2"}, dst:{id:"n3"}}},
+    ],
+}
 
 export const PortData = {
     nodes: [

@@ -1,5 +1,7 @@
 import React from 'react';
 import * as Base from './base';
+import {Movable} from '../extensions/movable';
+import {Linkable} from '../extensions/linkable';
 
 export const Node = Base.End;
 export const Edge = Base.Edge;
@@ -29,3 +31,6 @@ export const Graph = (Node=Node, Edge=Edge) => class extends Base.Graph {
     makeNodeProps (node) { return Object.assign(super.makeEndProps(node), { node }); }
     makeEdgeProps (edge) { return { edge }; }
 };
+
+export const MovableNode = Movable(Node, {propsToPosition: props => props.node.position});
+export const LinkableGraph = (Node,Edge) => Linkable(Graph(Node,Edge));

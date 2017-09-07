@@ -30,8 +30,16 @@ class Node extends MovablePortNode {
         this.props.onNodeRemove(this.props.node);
     }
 
+    onDragStart (event) {
+        this.moveHandlers.onMoveStart(event);
+    }
+
+    onDrag (event) {
+        this.moveHandlers.onMove(event);
+    }
+
     onDragEnd (event) {
-        super.onDragEnd(event);
+        this.moveHandlers.onMoveFinish(event);
         this.props.onNodeUpdate(this.props.node, { position: this.position });
     }
 }
@@ -48,17 +56,20 @@ class Port extends PortGraph.Port {
         return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, };
     }
 
-    onDragStart (event) {
+    onDragStartCapture (event) {
         event.stopPropagation();
+        event.nativeEvent.stopImmediatePropagation();
         event.dataTransfer.setData('linkSrcEnd', JSON.stringify(this.props.port));
         this.props.onLinkStart(event, this.props.port);
     }
 
     onDrag (event) {
+        event.stopPropagation();
         this.props.onLink(event);
     }
 
     onDragEnd (event) {
+        event.stopPropagation();
         this.props.onLinkFinish(event);
     }
 
@@ -98,15 +109,14 @@ class Edge extends PortGraph.Edge {
 const LinkablePureGraph = Linkable(PortGraph.Graph(Node, Port, Edge), {})
 
 class Graph extends LinkablePureGraph {
+    makeGraphProps () { return Object.assign(super.makeGraphProps(), selectBindedPrototypes(this, /^onDoubleClick/)); }
+    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), selectBindedPrototypes(this, /^onNode/)); }
+    makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), selectBindedPrototypes(this, /^onEdge/)); }
+    makePortProps (port) { return Object.assign(super.makePortProps(port), selectBindedPrototypes(this, /^onLink/), this.linkHandlers); }
+
     constructor (props) {
         super(props);
         this.state = PortData;
-        this.graphEventHandlers = {
-            onDoubleClick: this.onDoubleClick.bind(this)
-        };
-        this.nodeEventHandlers = selectBindedPrototypes(this, /^onNode/);
-        this.edgeEventHandlers = selectBindedPrototypes(this, /^onEdge/);
-        this.portEventHandlers = selectBindedPrototypes(this, /^onLink/);
     }
 
     prepareGraph () {
@@ -115,11 +125,6 @@ class Graph extends LinkablePureGraph {
         this.dataHandler = DataHandler(this.state);
         super.prepareGraph();
     }
-
-    makeGraphProps () { return Object.assign(super.makeGraphProps(), this.graphEventHandlers); }
-    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), this.nodeEventHandlers); }
-    makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), this.edgeEventHandlers); }
-    makePortProps (port) { return Object.assign(super.makePortProps(port), this.portEventHandlers); }
 
     onDoubleClick (event) {
         const newnode = NewPortNode(pointer(event));

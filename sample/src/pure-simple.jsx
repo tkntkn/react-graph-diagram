@@ -32,5 +32,16 @@ const Edge = class extends PureGraph.Edge {
 
 const Graph = PureGraph.Graph(Node, Edge);
 
-import {PureData as data} from './data';
-ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
+const initData = {
+    nodes: [
+        {id: "n1", position: {x: 100, y: 150}},
+        {id: "n2", position: {x: 300, y: 200}},
+        {id: "n3", position: {x: 400, y: 100}},
+    ],
+    edges: [
+        {id: "e1", ends: {src:{id:"n1"}, dst:{id:"n2"}}},
+        {id: "e2", ends: {src:{id:"n2"}, dst:{id:"n3"}}},
+    ],
+}
+
+ReactDOM.render(<Graph>{initData}</Graph>, document.getElementById("container"));

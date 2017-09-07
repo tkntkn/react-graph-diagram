@@ -5,8 +5,14 @@ import * as PortGraph from './components/port';
 // export {BaseGraph, PureGraph, PortGraph, FlowGraph};
 export {BaseGraph, PureGraph, PortGraph};
 
-export {Movable}  from './extension/movable';
-export {Linkable} from './extension/linkable';
+import * as PureStore from './stores/pure';
+import * as PortStore from './stores/port';
+// import * as FlowStore from './stores/flow';
+// export {BaseStore, PureStore, PortStore, FlowStore};
+export {PureStore, PortStore};
+
+export {Movable}  from './extensions/movable';
+export {Linkable} from './extensions/linkable';
 
 import * as Utils from './utils';
 export {Utils}

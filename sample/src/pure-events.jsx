@@ -1,16 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {PureGraph, Movable, Linkable} from 'react-graph-diagram';
+import {PureGraph, PureStore} from 'react-graph-diagram';
 import {selectBindedPrototypes, pointer} from './utils';
-import {PureData, DataHandler, NewEdge, NewPureNode} from './data';
 
-const check = v => [console.log(v), v][1];
-
-const MovablePureNode = Movable(PureGraph.Node, {
-    propsToPosition: props => props.node.position
-})
-
-const Node = class extends MovablePureNode {
+class Node extends PureGraph.MovableNode {
     render () {
         const handlers = selectBindedPrototypes(this, /^on/);
         const [left, top] = [this.position.x, this.position.y];
@@ -74,7 +67,7 @@ const Node = class extends MovablePureNode {
     }
 }
 
-const Edge = class extends PureGraph.Edge {
+class Edge extends PureGraph.Edge {
     render () {
         const handlers = selectBindedPrototypes(this, /^on/);
         const [a, b] = [this.ends.src, this.ends.dst];
@@ -93,53 +86,58 @@ const Edge = class extends PureGraph.Edge {
     }
 }
 
-const LinkablePureGraph = Linkable(PureGraph.Graph(Node, Edge), {});
 
-const Graph =  class extends LinkablePureGraph {
+import {PureGraphSample as initData} from './sample';
+const {makeNode, makeEdge, assign, when, predicate} = PureStore;
+const is = predicate;
+
+class Graph extends PureGraph.LinkableGraph(Node, Edge) {
+    makeGraphProps () { return Object.assign(super.makeGraphProps(), selectBindedPrototypes(this, /^onDoubleClick/)); }
+    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), selectBindedPrototypes(this, /^onNode/), this.linkHandlers); }
+    makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), selectBindedPrototypes(this, /^onEdge/)); }
+
     constructor (props) {
         super(props);
-        this.state = PureData;
-        this.graphEventHandlers = selectBindedPrototypes(this, /^onDoubleClick/);
-        this.nodeEventHandlers = selectBindedPrototypes(this, /^onNode/);
-        this.edgeEventHandlers = selectBindedPrototypes(this, /^onEdge/);
+        this.state = initData;
     }
 
     prepareGraph () {
         this.nodes = this.state.nodes;
         this.edges = this.state.edges;
-        this.dataHandler = DataHandler(this.state);
-        super.prepareGraph();
     }
 
-    makeGraphProps () { return Object.assign(super.makeGraphProps(), this.graphEventHandlers); }
-    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), this.nodeEventHandlers, this.linkHandlers); }
-    makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), this.edgeEventHandlers); }
-
     onDoubleClick (event) {
-        const newnode = NewPureNode(pointer(event));
-        const state = this.dataHandler.addNode(newnode);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            nodes: this.state.nodes.concat(makeNode(pointer(event)))
+        }, this.forceUpdate.bind(this));
     }
 
     onNodeRemove (node) {
-        const state = this.dataHandler.removeNode(node);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            nodes: this.state.nodes.filter(is.notSameAs(node)),
+            edges: this.state.edges.filter(is.notLinking(node)),
+        }, this.forceUpdate.bind(this));
     }
 
     onNodeUpdate (node, update) {
-        const state = this.dataHandler.updateNode(node, update);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            nodes: this.state.nodes.map(when(is.sameAs(node))(assign(update)))
+        }, this.forceUpdate.bind(this));
     }
 
     onNodeLinkMake (src, dst) {
-        const state = this.dataHandler.addEdge(NewEdge(src, dst));
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            edges: this.state.edges.concat(makeEdge(src, dst))
+        }, this.forceUpdate.bind(this));
     }
 
     onEdgeRemove (edge) {
-        const state = this.dataHandler.removeEdge(edge);
-        this.setState(state, this.forceUpdate.bind(this));
+        this.setState({
+            edges: this.state.edges.filter(is.notSameAs(edge))
+        }, this.forceUpdate.bind(this));
     }
 };
 
 ReactDOM.render(<Graph />, document.getElementById("container"));
+
+

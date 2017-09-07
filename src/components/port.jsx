@@ -15,8 +15,8 @@ export const Node = React.Component;
 export const Port = Base.End;
 export const Edge = Base.Edge;
 export const Graph = (Node=Node, Port=Port, Edge=Edge) => class extends PureGraph.Graph(Node, Edge) {
-    componentWillMount  () { this.prepareGraph(); this.preparePorts(); }
-    componentWillUpdate () { this.prepareGraph(); this.preparePorts(); }
+    componentWillMount  () { super.componentWillMount (); this.preparePorts(); }
+    componentWillUpdate () { super.componentWillUpdate(); this.preparePorts(); }
 
     prepareGraph () {
         this.nodes = this.props.children.nodes;

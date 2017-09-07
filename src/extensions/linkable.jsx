@@ -51,6 +51,9 @@ export const Linkable = (ReactComponent) => {
     };
 
     return class extends ReactComponent {
+        componentWillMount  () { super.componentWillMount (); this.prepareLinks(); }
+        componentWillUpdate () { super.componentWillUpdate(); this.prepareLinks(); }
+
         constructor (props) {
             super(props);
             this.linkNode = null;
@@ -74,7 +77,7 @@ export const Linkable = (ReactComponent) => {
             }
         }
 
-        prepareGraph () {
+        prepareLinks () {
             this.nodes = this.nodes.concat(this.linkNode || []);
             this.edges = this.edges.concat(this.linkEdge || []);
         }
