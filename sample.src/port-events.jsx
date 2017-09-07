@@ -51,7 +51,7 @@ class Port extends PortGraph.Port {
         return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, };
     }
 
-    onDragStartCapture (event) {
+    onDragStart (event) {
         event.stopPropagation();
         event.nativeEvent.stopImmediatePropagation();
         event.dataTransfer.setData('linkSrcEnd', JSON.stringify(this.props.port));

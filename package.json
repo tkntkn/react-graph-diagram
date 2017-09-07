@@ -1,7 +1,7 @@
 {
   "name": "react-graph-diagram",
   "version": "0.0.3",
-  "description": "a simplest graph-type diagram react component",
+  "description": "react components for graph-type diagram",
   "main": "lib/react-graph-diagram.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,8 @@
   "files": [
     "README.md",
     "rollup.config.js",
-    "src",
+    "lib.src",
+    "sample.src",
     "sample"
   ],
   "author": "tkntkn",

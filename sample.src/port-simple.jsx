@@ -45,4 +45,4 @@ class Edge extends PortGraph.Edge {
 const Graph = PortGraph.Graph(Node, Port, Edge);
 
 import {PortGraphSample as initData} from './sample';
-ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
+ReactDOM.render(<Graph>{initData}</Graph>, document.getElementById("container"));

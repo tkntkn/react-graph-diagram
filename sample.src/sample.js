@@ -24,9 +24,9 @@ export const PortGraphSample = {
 
 export const FlowGraphSample = {
     nodes: [
-        {id: "n1", position: {x:100, y:150}, in: 3, out: 3},
-        {id: "n2", position: {x:300, y:200}, in: 3, out: 3},
-        {id: "n3", position: {x:400, y:100}, in: 3, out: 3},
+        {id: "n1", position: {x:100, y:150}, size: {in:3, out:3}},
+        {id: "n2", position: {x:300, y:200}, size: {in:3, out:3}},
+        {id: "n3", position: {x:400, y:100}, size: {in:3, out:3}},
     ],
     edges: [
         {id: "e1", ends: {src:{node:"n1", flow:'out', index:0}, dst:{node:"n2", flow:'in', index:1}}},

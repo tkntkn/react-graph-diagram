@@ -1,110 +1,159 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {PortGraph} from 'react-graph-diagram';
-import {polar} from './utils';
+import {FlowGraph, FlowStore} from 'react-graph-diagram';
+import {selectBindedPrototypes, pointer} from './utils';
 
-class Node extends PortGraph.Node {
+class Node extends FlowGraph.MovableNode {
     render () {
-        const [left, top] = [this.props.node.position.x, this.props.node.position.y];
+        const handlers = selectBindedPrototypes(this, /^on/);
+        const [left, top] = [this.position.x, this.position.y];
+        const inlets  = this.props.children.filter(child => child.props.port.flow === 'in');
+        const outlets = this.props.children.filter(child => child.props.port.flow === 'out');
         return (
-            <div className="node" ref="point" style={{left, top}}>
+            <div draggable className="node" ref="point" style={{left, top}} {...handlers}>
                 {this.props.node.id}
-                {this.props.children.map((child,i,a) => {
-                    const {x,y} = polar(26, 2*Math.PI*(i/a.length));
-                    const style = {position: 'absolute', left:`${20+x}px`, top:`${20+y}px`};
-                    return <div key={i} style={style}>{child}</div>
-                })}
+                <div className="ports in">{inlets.map(React.cloneElement)}</div>
+                <div className="ports out">{outlets.map(React.cloneElement)}</div>
             </div>
         );
     }
+
+    onDoubleClick (event) {
+        event.stopPropagation();
+        this.props.onNodeRemove(this.props.node);
+    }
+
+    onDragStart (event) {
+        this.moveHandlers.onMoveStart(event);
+    }
+
+    onDrag (event) {
+        this.moveHandlers.onMove(event);
+    }
+
+    onDragEnd (event) {
+        this.moveHandlers.onMoveFinish(event);
+        this.props.onNodeUpdate(this.props.node, { position: this.position });
+    }
 }
 
-class Port extends PortGraph.Port {
+class Port extends FlowGraph.Port {
     render () {
-        return <span ref="point" className="port"/>;
+        const handlers = selectBindedPrototypes(this, /^on/);
+        const className = `port ${this.props.port.flow}`;
+        return <span draggable ref="point" className={className} {...handlers} />
     }
 
     getEndPosition () {
         const rect = this.refs.point.getBoundingClientRect();
         return { x: rect.left + rect.width/2, y: rect.top + rect.height/2, };
     }
-}
 
-class Edge extends PortGraph.Edge {
-    render () {
-        const [a, b] = [this.ends.src, this.ends.dst];
-        const d = `M${a.x},${a.y} L${b.x},${b.y}`;
-        return (
-            <g>
-                <path className="edge" d={d} />
-            </g>
-        );
+    onDragStart (event) {
+        event.stopPropagation();
+        event.nativeEvent.stopImmediatePropagation();
+        event.dataTransfer.setData('linkSrcEnd', JSON.stringify(this.props.port));
+        this.props.onLinkStart(event, this.props.port);
+    }
+
+    onDrag (event) {
+        event.stopPropagation();
+        this.props.onLink(event);
+    }
+
+    onDragEnd (event) {
+        event.stopPropagation();
+        this.props.onLinkFinish(event);
+    }
+
+    onDragEnter (event) {
+        event.preventDefault();
+    }
+
+    onDragOver (event) {
+        event.preventDefault();
+    }
+
+    onDrop (event) {
+        const src = JSON.parse(event.dataTransfer.getData('linkSrcEnd') || "false");
+        if (src) this.props.onLinkMake(src, this.props.port);
     }
 }
 
-const Graph = PortGraph.Graph(Node, Port, Edge);
+class Edge extends FlowGraph.Edge {
+    render () {
+        const handlers = selectBindedPrototypes(this, /^on/);
+        const [a, b] = [this.ends.src, this.ends.dst];
+        const diff = Math.abs(a.y - b.y);
+        const p1 = `${a.x},${a.y}`;
+        const p2 = `${a.x},${a.y + diff + 30}`;
+        const p3 = `${b.x},${b.y - diff - 30}`;
+        const p4 = `${b.x},${b.y}`;
+        const d = `M${p1} C${p2} ${p3} ${p4}`;
+        return (
+            <g>
+                <path className="edge" d={d} />
+                <path className="edge-wrapper" d={d} {...handlers} />
+            </g>
+        );
+    }
 
-import {PortGraphSample as initData} from './sample';
-ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
+    onDoubleClick (event) {
+        event.stopPropagation();
+        this.props.onEdgeRemove(this.props.edge);
+    }
+}
 
-// import React from 'react';
-// import ReactDOM from 'react-dom';
-// import {FlowGraph} from 'react-graph-diagram';
+import {FlowGraphSample as initData} from './sample';
+const {makeNode, makeEdge, assign, when, predicate} = FlowStore;
+const is = predicate;
 
-// class Edge extends FlowGraph.Edge {
-//     render () {
-//         const [a, b] = this.props.endPositions;
+class Graph extends FlowGraph.LinkableGraph(Node, Port, Edge) {
+    makeGraphProps () { return Object.assign(super.makeGraphProps(), selectBindedPrototypes(this, /^onDoubleClick/)); }
+    makeNodeProps (node) { return Object.assign(super.makeNodeProps(node), selectBindedPrototypes(this, /^onNode/)); }
+    makeEdgeProps (edge) { return Object.assign(super.makeEdgeProps(edge), selectBindedPrototypes(this, /^onEdge/)); }
+    makePortProps (port) { return Object.assign(super.makePortProps(port), selectBindedPrototypes(this, /^onLink/), this.linkHandlers); }
 
-//         const diff = Math.abs(a.y - b.y);
-//         const p1 = `${a.x},${a.y}`;
-//         const p2 = `${a.x},${a.y + diff + 30}`;
-//         const p3 = `${b.x},${b.y - diff - 30}`;
-//         const p4 = `${b.x},${b.y}`;
+    constructor (props) {
+        super(props);
+        this.state = initData;
+    }
 
-//         const className = `edge`;
-//         return <path className="edge" d={`M${p1} C${p2} ${p3} ${p4}`} />
-//     }
-// }
+    prepareGraph () {
+        this.nodes = this.state.nodes;
+        this.edges = this.state.edges;
+    }
 
-// class Port extends FlowGraph.Port {
-//     render () {
-//         const port = this.props.port;
-//         const style = { left: `${this.props.r*53 - (3 + 2 * 3 + 4) / 2 }px` };
-//         const className = `port ${port.flow}`;
-//         return <span ref="point" className={className} style={style}/>
-//     }
+    onDoubleClick (event) {
+        this.setState({
+            nodes: this.state.nodes.concat(makeNode(pointer(event), {in:Math.floor(Math.random()*3+1), out:Math.floor(Math.random()*3+1)}))
+        }, this.forceUpdate.bind(this));
+    }
 
-//     static getProps (port, props) {
-//         const node = props.children.nodes.find(node => node.id === port.node);
-//         const r = (port.index+1)/(node[port.flow]+1);
-//         return Object.assign(super.getProps(port, props), {r})
-//     }
-// }
+    onNodeRemove (node) {
+        this.setState({
+            nodes: this.state.nodes.filter(is.notSameAs(node)),
+            edges: this.state.edges.filter(is.notLinking(node)),
+        }, this.forceUpdate.bind(this));
+    }
 
-// class Node extends FlowGraph.Node {
-//     render () {
-//         const style = {left: this.props.node.x, top: this.props.node.y};
-//         return (
-//             <div className="node" style={style}>
-//                 {this.props.node.id}
-//                 {this.props.children}
-//             </div>
-//         );
-//     }
-// }
+    onNodeUpdate (node, update) {
+        this.setState({
+            nodes: this.state.nodes.map(when(is.sameAs(node))(assign(update)))
+        }, this.forceUpdate.bind(this));
+    }
 
-// const Graph = FlowGraph(Node, Port, Edge);
+    onLinkMake (src, dst) {
+        this.setState({
+            edges: this.state.edges.concat(makeEdge(src, dst))
+        }, this.forceUpdate.bind(this));
+    }
 
-// const data = {
-//     nodes: [
-//         {id: "n1", in: 3, out: 3, x: 100, y: 150},
-//         {id: "n2", in: 3, out: 3, x: 300, y: 200},
-//         {id: "n3", in: 3, out: 3, x: 400, y: 100},
-//     ],
-//     edges: [
-//         {id: "e1", ends: [{node:"n1", flow:'out', index:0}, {node:"n2", flow:'in', index:1}]},
-//         {id: "e2", ends: [{node:"n2", flow:'out', index:2}, {node:"n3", flow:'in', index:0}]},
-//     ],
-// };
+    onEdgeRemove (edge) {
+        this.setState({
+            edges: this.state.edges.filter(is.notSameAs(edge))
+        }, this.forceUpdate.bind(this));
+    }
+}
 
-// ReactDOM.render(<Graph>{data}</Graph>, document.getElementById("container"));
+ReactDOM.render(<Graph>{initData}</Graph>, document.getElementById("container"));

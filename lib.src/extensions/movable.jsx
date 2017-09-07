@@ -45,7 +45,7 @@ export const Movable = (ReactComponent, options={}) => {
         }
 
         updatePosition (position, moving, bugCut) {
-            if (bugCut && pointer(event).x === 0 && pointer(event).y === 0) return;
+            if (bugCut && position.x === 0 && position.y === 0) return;
             if (this.moving && this.prevPosition) {
                 this.position = vecaddsub(this.position, position, this.prevPosition);
                 this.forceUpdate();
