@@ -1,6 +1,6 @@
 {
   "name": "react-graph-diagram",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "react components for graph-type diagram",
   "main": "lib/react-graph-diagram.js",
   "scripts": {

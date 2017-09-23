@@ -6,12 +6,12 @@ import {Linkable} from '../extensions/linkable';
 export const Node = Base.End;
 export const Edge = Base.Edge;
 export const Graph = (Node=Node, Edge=Edge) => class extends Base.Graph {
-    componentWillMount  () { this.prepareGraph(); }
-    componentWillUpdate () { this.prepareGraph(); }
+    componentWillMount (nextProps, nextState) { this.prepareGraph(nextProps, nextState); }
+    componentWillUpdate(nextProps, nextState) { this.prepareGraph(nextProps, nextState); }
 
-    prepareGraph () {
-        this.nodes = this.props.children.nodes;
-        this.edges = this.props.children.edges;
+    prepareGraph (props, state) {
+        this.nodes = props.children.nodes;
+        this.edges = props.children.edges;
     }
 
     render () {
