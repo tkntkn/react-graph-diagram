@@ -116,40 +116,40 @@ class Graph extends PortGraph.LinkableGraph(Node, Port, Edge) {
         this.state = initData;
     }
 
-    prepareGraph () {
-        this.nodes = this.state.nodes;
-        this.edges = this.state.edges;
+    prepareGraph (props=this.props, state=this.state) {
+        this.nodes = state.nodes;
+        this.edges = state.edges;
     }
 
     onDoubleClick (event) {
         this.setState({
             nodes: this.state.nodes.concat(makeNode(pointer(event), Math.floor(Math.random() * 10 + 1)))
-        }, this.forceUpdate.bind(this));
+        });
     }
 
     onNodeRemove (node) {
         this.setState({
             nodes: this.state.nodes.filter(is.notSameAs(node)),
             edges: this.state.edges.filter(is.notLinking(node)),
-        }, this.forceUpdate.bind(this));
+        });
     }
 
     onNodeUpdate (node, update) {
         this.setState({
             nodes: this.state.nodes.map(when(is.sameAs(node))(assign(update)))
-        }, this.forceUpdate.bind(this));
+        });
     }
 
     onLinkMake (src, dst) {
         this.setState({
             edges: this.state.edges.concat(makeEdge(src, dst))
-        }, this.forceUpdate.bind(this));
+        });
     }
 
     onEdgeRemove (edge) {
         this.setState({
             edges: this.state.edges.filter(is.notSameAs(edge))
-        }, this.forceUpdate.bind(this));
+        });
     }
 }
 

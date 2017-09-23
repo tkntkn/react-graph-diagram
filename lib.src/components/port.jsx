@@ -15,15 +15,15 @@ export const Node = React.Component;
 export const Port = Base.End;
 export const Edge = Base.Edge;
 export const Graph = (Node=Node, Port=Port, Edge=Edge) => class extends PureGraph.Graph(Node, Edge) {
-    componentWillMount  (nextProps, nextState) { super.componentWillMount (nextProps, nextState); this.preparePorts(nextProps, nextState); }
-    componentWillUpdate (nextProps, nextState) { super.componentWillUpdate(nextProps, nextState); this.preparePorts(nextProps, nextState); }
+    componentWillMount  () { super.componentWillMount (); this.preparePorts(); }
+    componentWillUpdate () { super.componentWillUpdate(); this.preparePorts(); }
 
-    prepareGraph (props, state) {
-        this.nodes = props.children.nodes;
-        this.edges = props.children.edges;
+    prepareGraph (props=this.props, state=this.state) {
+        this.nodes = this.props.children.nodes;
+        this.edges = this.props.children.edges;
     }
 
-    preparePorts(props, state) {
+    preparePorts (props=this.props, state=this.state) {
         this.edges = this.edges.map(edgeWithId);
         const ports = this.nodes.map(node => ({[node.id]: toPorts(node)}));
         this.ports = Object.assign({}, ...ports);

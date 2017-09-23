@@ -9,7 +9,7 @@ export const Graph = (Node=Node, Edge=Edge) => class extends Base.Graph {
     componentWillMount (nextProps, nextState) { this.prepareGraph(nextProps, nextState); }
     componentWillUpdate(nextProps, nextState) { this.prepareGraph(nextProps, nextState); }
 
-    prepareGraph (props, state) {
+    prepareGraph (props=this.props, state=this.state) {
         this.nodes = props.children.nodes;
         this.edges = props.children.edges;
     }
